@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BBQ-weer checker</title>
+  <style>
+    :root{
+      --bg:#f9fafb;
+      --fg:#111827;
+      --muted:#4b5563;
+      --ok:#16a34a;
+      --bad:#dc2626;
+      --card:#ffffff;
+    }
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;
+      background:var(--bg);
+      color:var(--fg); display:flex; min-height:100vh; align-items:center; justify-content:center;
+      padding:24px;
+    }
+    .app{
+      width:min(880px,100%); background:var(--card);
+      border:1px solid #e5e7eb; border-radius:24px; padding:28px; box-shadow:0 10px 30px rgba(0,0,0,.08);
+      text-align:center;
+    }
+    h1{margin:0; font-size: clamp(22px,3vw,28px)}
+    .verdict{
+      margin-top:20px; font-size: clamp(28px,6vw,48px); font-weight:800;
+    }
+    .ok{ color:var(--ok) }
+    .bad{ color:var(--bad) }
+    .card{
+      background: var(--card);
+      border:1px solid #e5e7eb; border-radius:18px; padding:18px; margin-top:20px;
+    }
+    .metrics{ display:grid; grid-template-columns: repeat(3,1fr); gap:10px; margin-top:8px }
+    .metric{ background:#f3f4f6; border:1px solid #e5e7eb; border-radius:12px; padding:12px }
+    .metric .label{color:var(--muted); font-size:12px}
+    .metric .value{ font-weight:700; font-size:20px; margin-top:6px}
+
+    /* BBQ animatie */
+    .stage{ position:relative; height:260px; display:flex; align-items:center; justify-content:center; margin-top:20px; }
+    .grill{ position:relative; width:220px; height:120px; transform: translateY(10px); }
+    .grill .bowl{
+      position:absolute; inset: auto 0 0 0; height:70px; margin:auto; width:220px;
+      background: radial-gradient(200px 80px at 50% 0%, #9ca3af, #6b7280);
+      border:2px solid #374151; border-bottom-left-radius:140px 90px; border-bottom-right-radius:140px 90px;
+    }
+    .grill .legs:before, .grill .legs:after{
+      content:""; position:absolute; width:10px; height:70px; background:#4b5563; bottom:-65px; border-radius:8px;
+    }
+    .grill .legs:before{ left:40px; transform:rotate(8deg) }
+    .grill .legs:after{ right:40px; transform:rotate(-8deg) }
+    .grates{
+      position:absolute; left:10px; right:10px; top:-6px; height:10px; border-radius:10px;
+      background: linear-gradient(90deg, #6b7280 10px, transparent 10px) left/20px 100% repeat-x,
+                  radial-gradient(10px 10px at 50% 50%, #9ca3af, #6b7280);
+      animation: updown 2.2s ease-in-out infinite;
+    }
+    @keyframes updown{ 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(2px) } }
+    .flames{ position:absolute; bottom:32px; left:50%; transform:translateX(-50%); width:120px; height:90px; }
+    .flame{
+      position:absolute; bottom:0; width:26px; height:50px;
+      border-radius:14px 14px 14px 14px/30px 30px 14px 14px;
+      background: radial-gradient(12px 26px at 50% 75%, #ffd36c, #ff7b00 60%, #ff5400 100%);
+      transform-origin: bottom center; opacity:.95; animation: flicker 1.2s infinite ease-in-out alternate;
+    }
+    .flame:nth-child(1){ left:8px;  animation-duration:1.05s; }
+    .flame:nth-child(2){ left:36px; animation-duration:1.25s }
+    .flame:nth-child(3){ left:64px; animation-duration:1.1s }
+    .flame:nth-child(4){ left:92px; animation-duration:1.3s }
+    @keyframes flicker{ 0%{ transform: scale(1) rotate(-2deg) translateY(0) }
+      100%{ transform: scale(1.08) rotate(3deg) translateY(-8px) } }
+
+    /* Wolken + regen animatie */
+    .sky{ position:relative; height:260px; overflow:hidden; border-radius:16px; background:#e5e7eb; margin-top:20px;}
+    .cloud{
+      position:absolute; top:30px; left:-180px; width:160px; height:50px; background:#9ca3af; border-radius:50px;
+      box-shadow: 40px 10px 0 #9ca3af, 80px 0 0 #9ca3af, 120px 10px 0 #9ca3af, 20px -10px 0 #9ca3af;
+      animation: drift 22s linear infinite;
+    }
+    @keyframes drift{ 0%{ transform: translateX(0)} 100%{ transform: translateX(140%)} }
+    .raindrop{
+      position:absolute; top:80px; width:2px; height:14px; background:#60a5fa; opacity:.8;
+      animation: rain 1s linear infinite;
+    }
+    @keyframes rain{ 0%{ transform: translateY(0); opacity:0.9 } 100%{ transform: translateY(160px); opacity:0 } }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <h1>Is het BBQ-weer? 🔥</h1>
+    <div id="verdict" class="verdict"></div>
+
+    <section id="animWrap"></section>
+
+    <section class="card">
+      <div class="metrics">
+        <div class="metric"><div class="label">Temperatuur</div><div class="value" id="temp">—</div></div>
+        <div class="metric"><div class="label">Neerslag</div><div class="value" id="rain">—</div></div>
+        <div class="metric"><div class="label">Tijdstip</div><div class="value" id="time">—</div></div>
+      </div>
+    </section>
+  </main>
+
+  <template id="bbqTemplate">
+    <section class="stage">
+      <div class="grill">
+        <div class="grates"></div>
+        <div class="flames">
+          <div class="flame"></div><div class="flame"></div><div class="flame"></div><div class="flame"></div>
+        </div>
+        <div class="bowl"></div>
+        <div class="legs"></div>
+      </div>
+    </section>
+  </template>
+
+  <template id="waitTemplate">
+    <section class="sky">
+      <div class="cloud" style="animation-delay:0s"></div>
+      <div class="cloud" style="top:70px; animation-delay:6s; transform:scale(1.2)"></div>
+      <div class="cloud" style="top:20px; animation-delay:12s; transform:scale(.9)"></div>
+    </section>
+  </template>
+
+  <script>
+    const els = {
+      verdict: document.getElementById('verdict'),
+      temp: document.getElementById('temp'),
+      rain: document.getElementById('rain'),
+      time: document.getElementById('time'),
+      animWrap: document.getElementById('animWrap'),
+      bbqTpl: document.getElementById('bbqTemplate'),
+      waitTpl: document.getElementById('waitTemplate')
+    };
+
+    const fmt = (n, unit="") => n == null ? "—" :
+      `${new Intl.NumberFormat('nl-NL',{maximumFractionDigits:1}).format(n)}${unit}`;
+
+    async function getWeather(lat, lon){
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&timezone=auto&hourly=temperature_2m,precipitation`;
+      const r = await fetch(url);
+      return r.json();
+    }
+
+    function render(ok){
+      els.animWrap.innerHTML = "";
+      const node = (ok ? els.bbqTpl : els.waitTpl).content.cloneNode(true);
+      els.animWrap.appendChild(node);
+      if(!ok){
+        const sky = els.animWrap.querySelector('.sky');
+        for(let i=0;i<40;i++){
+          const drop=document.createElement('div');
+          drop.className='raindrop';
+          drop.style.left=(Math.random()*100)+'%';
+          drop.style.animationDelay=(Math.random()*1.2)+'s';
+          sky.appendChild(drop);
+        }
+      }
+    }
+
+    async function run(){
+      try{
+        const data = await getWeather(52.5168, 6.0830); // Zwolle
+        const now = new Date();
+        const hours = data.hourly.time.map(t=>new Date(t));
+        const temps = data.hourly.temperature_2m;
+        const precs = data.hourly.precipitation;
+
+        // kijk 3 uur vooruit
+        let ok = true;
+        let checkTime = null, checkTemp=null, checkPrec=null;
+        for(let i=0;i<hours.length;i++){
+          if(hours[i] >= now && hours[i] <= new Date(now.getTime()+3*3600*1000)){
+            checkTime = hours[i]; checkTemp = temps[i]; checkPrec = precs[i];
+            if(!(temps[i]>=15 && precs[i]<=0.001)){ ok=false; break; }
+          }
+        }
+
+        els.temp.textContent = fmt(checkTemp,"°C");
+        els.rain.textContent = fmt(checkPrec," mm/h");
+        els.time.textContent = checkTime ? new Intl.DateTimeFormat('nl-NL',{dateStyle:'medium', timeStyle:'short'}).format(checkTime) : "—";
+
+        els.verdict.textContent = ok ? "Ja, aansteken die handel!" : "Nee, dat wordt thuisbezorgd!";
+        els.verdict.className = "verdict " + (ok?"ok":"bad");
+
+        render(ok);
+      }catch(e){
+        els.verdict.textContent="Fout bij ophalen gegevens";
+        els.verdict.className="verdict bad";
+      }
+    }
+
+    run();
+  </script>
+</body>
+</html>
