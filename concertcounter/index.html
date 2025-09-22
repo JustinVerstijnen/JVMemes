@@ -159,71 +159,77 @@
 
   </main>
   <script>
-    function interpolateColor(daysLeft) {
-      // thresholds:
-      // >=200 dagen → zwart (#111827)
-      // 100–200 dagen → blauw (#2563eb)
-      // 0–30 dagen → groen (#16a34a)
+  function interpolateColor(daysLeft) {
+    if (daysLeft >= 200) return "#111827"; 
+    if (daysLeft <= 30) return "#16a34a"; 
 
-      if (daysLeft >= 200) return "#111827"; 
-      if (daysLeft <= 30) return "#16a34a"; 
+    if (daysLeft < 200 && daysLeft >= 100) {
+      const t = (200 - daysLeft) / 100; 
+      return blend("#111827", "#2563eb", t);
+    }
+    if (daysLeft < 100 && daysLeft > 30) {
+      const t = (100 - daysLeft) / 70; 
+      return blend("#2563eb", "#16a34a", t);
+    }
+  }
 
-      if (daysLeft < 200 && daysLeft >= 100) {
-        // zwart naar blauw
-        const t = (200 - daysLeft) / 100; // 0 bij 200, 1 bij 100
-        return blend("#111827", "#2563eb", t);
+  function blend(c1, c2, t) {
+    const r1 = parseInt(c1.substr(1,2),16);
+    const g1 = parseInt(c1.substr(3,2),16);
+    const b1 = parseInt(c1.substr(5,2),16);
+    const r2 = parseInt(c2.substr(1,2),16);
+    const g2 = parseInt(c2.substr(3,2),16);
+    const b2 = parseInt(c2.substr(5,2),16);
+
+    const r = Math.round(r1 + (r2-r1)*t);
+    const g = Math.round(g1 + (g2-g1)*t);
+    const b = Math.round(b1 + (b2-b1)*t);
+
+    return `rgb(${r},${g},${b})`;
+  }
+
+  function isSameDay(date1, date2) {
+    return (
+      date1.getFullYear() === date2.getFullYear() &&
+      date1.getMonth() === date2.getMonth() &&
+      date1.getDate() === date2.getDate()
+    );
+  }
+
+  function updateCountdowns() {
+    const now = new Date();
+
+    document.querySelectorAll('.concert-card').forEach(card => {
+      const targetDate = new Date(card.dataset.datetime);
+      const countdownEl = card.querySelector('.countdown');
+
+      if (isSameDay(targetDate, now)) {
+        countdownEl.textContent = "Vandaag ⚡🎸";
+        countdownEl.style.color = "#16a34a"; // groen accent
+        return;
       }
-      if (daysLeft < 100 && daysLeft > 30) {
-        // blauw naar groen
-        const t = (100 - daysLeft) / 70; // 0 bij 100, 1 bij 30
-        return blend("#2563eb", "#16a34a", t);
+
+      const diff = targetDate - now;
+
+      if (diff <= 0) {
+        countdownEl.textContent = "🎶 Het concert is bezig of voorbij!";
+        countdownEl.classList.add("finished");
+      } else {
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((diff / (1000 * 60)) % 60);
+        const seconds = Math.floor((diff / 1000) % 60);
+
+        countdownEl.textContent =
+          `${days}d ${hours}u ${minutes}m ${seconds}s`;
+        countdownEl.classList.remove("finished");
+        countdownEl.style.color = interpolateColor(days);
       }
-    }
+    });
+  }
 
-    function blend(c1, c2, t) {
-      // hex naar rgb
-      const r1 = parseInt(c1.substr(1,2),16);
-      const g1 = parseInt(c1.substr(3,2),16);
-      const b1 = parseInt(c1.substr(5,2),16);
-      const r2 = parseInt(c2.substr(1,2),16);
-      const g2 = parseInt(c2.substr(3,2),16);
-      const b2 = parseInt(c2.substr(5,2),16);
-
-      const r = Math.round(r1 + (r2-r1)*t);
-      const g = Math.round(g1 + (g2-g1)*t);
-      const b = Math.round(b1 + (b2-b1)*t);
-
-      return `rgb(${r},${g},${b})`;
-    }
-
-    function updateCountdowns() {
-      const now = new Date();
-
-      document.querySelectorAll('.concert-card').forEach(card => {
-        const targetDate = new Date(card.dataset.datetime);
-        const countdownEl = card.querySelector('.countdown');
-
-        const diff = targetDate - now;
-
-        if (diff <= 0) {
-          countdownEl.textContent = "🎶 Het concert is bezig of voorbij!";
-          countdownEl.classList.add("finished");
-        } else {
-          const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-          const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-          const minutes = Math.floor((diff / (1000 * 60)) % 60);
-          const seconds = Math.floor((diff / 1000) % 60);
-
-          countdownEl.textContent =
-            `${days}d ${hours}u ${minutes}m ${seconds}s`;
-          countdownEl.classList.remove("finished");
-          countdownEl.style.color = interpolateColor(days);
-        }
-      });
-    }
-
-    updateCountdowns();
-    setInterval(updateCountdowns, 1000);
-  </script>
+  updateCountdowns();
+  setInterval(updateCountdowns, 1000);
+</script>
 </body>
 </html>
