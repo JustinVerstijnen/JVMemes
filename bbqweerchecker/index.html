@@ -32,10 +32,11 @@
     .bad{ color:var(--bad) }
     .card{
       background: var(--card);
-      border:1px solid #e5e7eb; border-radius:18px; padding:18px; margin-top:20px;
+      border:none; border-radius:18px; padding:18px; margin-top:20px;
     }
     .metrics{ display:grid; grid-template-columns: repeat(3,1fr); gap:10px; margin-top:8px }
-    .metric{ background:#f3f4f6; border:1px solid #e5e7eb; border-radius:12px; padding:12px }
+    /* 🔽 Rand weggehaald */
+    .metric{ background:#f3f4f6; border:none; border-radius:12px; padding:12px }
     .metric .label{color:var(--muted); font-size:12px}
     .metric .value{ font-weight:700; font-size:20px; margin-top:6px}
 
@@ -73,7 +74,7 @@
     @keyframes flicker{ 0%{ transform: scale(1) rotate(-2deg) translateY(0) }
       100%{ transform: scale(1.08) rotate(3deg) translateY(-8px) } }
 
-    /* Wolken + regen animatie */
+    /* Wolken */
     .sky{ position:relative; height:260px; overflow:hidden; border-radius:16px; background:#e5e7eb; margin-top:20px;}
     .cloud{
       position:absolute; top:30px; left:-180px; width:160px; height:50px; background:#9ca3af; border-radius:50px;
@@ -81,11 +82,20 @@
       animation: drift 22s linear infinite;
     }
     @keyframes drift{ 0%{ transform: translateX(0)} 100%{ transform: translateX(140%)} }
+
+    /* Raindrops */
     .raindrop{
       position:absolute; top:80px; width:2px; height:14px; background:#60a5fa; opacity:.8;
       animation: rain 1s linear infinite;
     }
     @keyframes rain{ 0%{ transform: translateY(0); opacity:0.9 } 100%{ transform: translateY(160px); opacity:0 } }
+
+    /* Zon & verbranden */
+    .sun-stage{ position:relative; height:260px; margin-top:20px; display:flex; justify-content:center; align-items:flex-end; }
+    .sun{ position:absolute; top:20px; width:120px; height:120px; background:radial-gradient(circle, #fde047, #facc15); border-radius:50%; box-shadow:0 0 40px #facc15; animation: pulse 2s infinite alternate;}
+    @keyframes pulse{0%{transform:scale(1)}100%{transform:scale(1.1)}}
+    .person{ width:20px; height:60px; background:#ef4444; border-radius:8px; margin:0 10px; animation: burn 1.5s infinite alternate; }
+    @keyframes burn{ 0%{ opacity:1; transform:translateY(0)} 100%{ opacity:0.4; transform:translateY(-10px)} }
   </style>
 </head>
 <body>
@@ -125,6 +135,17 @@
     </section>
   </template>
 
+  <template id="burnTemplate">
+    <section class="sun-stage">
+      <div class="sun"></div>
+      <div class="person"></div>
+      <div class="person"></div>
+      <div class="person"></div>
+      <div class="person"></div>
+      <div class="person"></div>
+    </section>
+  </template>
+
   <script>
     const els = {
       verdict: document.getElementById('verdict'),
@@ -133,7 +154,8 @@
       time: document.getElementById('time'),
       animWrap: document.getElementById('animWrap'),
       bbqTpl: document.getElementById('bbqTemplate'),
-      waitTpl: document.getElementById('waitTemplate')
+      waitTpl: document.getElementById('waitTemplate'),
+      burnTpl: document.getElementById('burnTemplate')
     };
 
     const fmt = (n, unit="") => n == null ? "—" :
@@ -145,11 +167,15 @@
       return r.json();
     }
 
-    function render(ok){
+    function render(mode){
       els.animWrap.innerHTML = "";
-      const node = (ok ? els.bbqTpl : els.waitTpl).content.cloneNode(true);
+      let node;
+      if(mode==="ok") node = els.bbqTpl.content.cloneNode(true);
+      else if(mode==="burn") node = els.burnTpl.content.cloneNode(true);
+      else node = els.waitTpl.content.cloneNode(true);
       els.animWrap.appendChild(node);
-      if(!ok){
+
+      if(mode==="wait"){
         const sky = els.animWrap.querySelector('.sky');
         for(let i=0;i<40;i++){
           const drop=document.createElement('div');
@@ -169,13 +195,15 @@
         const temps = data.hourly.temperature_2m;
         const precs = data.hourly.precipitation;
 
-        // kijk 3 uur vooruit
-        let ok = true;
+        let mode="wait";
         let checkTime = null, checkTemp=null, checkPrec=null;
+
         for(let i=0;i<hours.length;i++){
           if(hours[i] >= now && hours[i] <= new Date(now.getTime()+3*3600*1000)){
             checkTime = hours[i]; checkTemp = temps[i]; checkPrec = precs[i];
-            if(!(temps[i]>=15 && precs[i]<=0.001)){ ok=false; break; }
+            if(checkTemp > 32){ mode="burn"; break; }
+            else if(checkTemp >= 10 && checkPrec <= 0.001){ mode="ok"; }
+            else { mode="wait"; }
           }
         }
 
@@ -183,10 +211,18 @@
         els.rain.textContent = fmt(checkPrec," mm/h");
         els.time.textContent = checkTime ? new Intl.DateTimeFormat('nl-NL',{dateStyle:'medium', timeStyle:'short'}).format(checkTime) : "—";
 
-        els.verdict.textContent = ok ? "Ja, aansteken die handel!" : "Nee, dat wordt thuisbezorgd!";
-        els.verdict.className = "verdict " + (ok?"ok":"bad");
+        if(mode==="ok"){
+          els.verdict.textContent="Ja, steek aan dat ding Pieter!";
+          els.verdict.className="verdict ok";
+        }else if(mode==="burn"){
+          els.verdict.textContent="Veel te warm! ☀️🔥";
+          els.verdict.className="verdict bad";
+        }else{
+          els.verdict.textContent="Nee, dat wordt thuisbezorgd!";
+          els.verdict.className="verdict bad";
+        }
 
-        render(ok);
+        render(mode);
       }catch(e){
         els.verdict.textContent="Fout bij ophalen gegevens";
         els.verdict.className="verdict bad";
