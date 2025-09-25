@@ -55,14 +55,17 @@
             justify-content: center;
         }
 
-        .flag-container {
+        .gif-container, .flag-container {
             margin-top: 20px;
+            display: flex;
+            justify-content: center;
         }
 
-        .flag-container img {
-            width: 100px;
+        .gif-container img, .flag-container img {
+            max-width: 200px;
+            width: 100%;
             height: auto;
-            border-radius: 5px;
+            border-radius: 10px;
         }
 
         @keyframes fadeIn {
@@ -88,8 +91,8 @@
                 font-size: 1.4rem;
             }
 
-            .flag-container img {
-                width: 80px;
+            .gif-container img, .flag-container img {
+                max-width: 150px;
             }
         }
     </style>
@@ -104,9 +107,10 @@
             <span id="seconds"></span>
         </div>
 
-        <!-- Kroatische vlag -->
-        <div class="flag-container">
-            " alt="Vreten"></a>
+        <!-- GIF onder de counter -->
+        <div class="gif-container">
+            <img src="https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyNGQ2Y2Z4cW11MDZlZXVrcnNrYnltcHkzczZ3NXdvMXNodHNhaHkyNCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/A0EsxeeJz7asU/source.gif" 
+                 alt="Funny gif">
         </div>
     </div>
 
