@@ -1,1 +1,146 @@
-test
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vreten Countdown</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+            flex-direction: column;
+        }
+
+        .counter-container {
+            text-align: center;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+
+        .countdown {
+            font-size: 2rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .countdown span {
+            margin: 0 10px;
+        }
+
+        #countdown {
+            display: flex;
+            justify-content: center;
+        }
+
+        .flag-container {
+            margin-top: 20px;
+        }
+
+        .flag-container img {
+            width: 100px;
+            height: auto;
+            border-radius: 5px;
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        #countdown span {
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .countdown {
+                font-size: 1.5rem;
+            }
+
+            h1 {
+                font-size: 1.4rem;
+            }
+
+            .flag-container img {
+                width: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="counter-container">
+        <h1>Vreten Countdown</h1>
+        <div id="countdown" class="countdown">
+            <span id="days"></span>:
+            <span id="hours"></span>:
+            <span id="minutes"></span>:
+            <span id="seconds"></span>
+        </div>
+
+        <!-- Kroatische vlag -->
+        <div class="flag-container">
+            " alt="Vreten"></a>
+        </div>
+    </div>
+
+    <script>
+        // Zet de datum van de vakantie in
+        const vacationDate = new Date("December 6, 2025 22:00:00").getTime();
+
+        // Update de teller elke seconde
+        let countdownFunction = setInterval(function() {
+
+            // Haal de huidige datum en tijd op
+            let now = new Date().getTime();
+
+            // Bereken het verschil tussen de vakantie en nu
+            let distance = vacationDate - now;
+
+            // Bereken de dagen, uren, minuten en seconden
+            let days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            // Toon de resultaten in de HTML
+            document.getElementById("days").innerHTML = days;
+            document.getElementById("hours").innerHTML = hours;
+            document.getElementById("minutes").innerHTML = minutes;
+            document.getElementById("seconds").innerHTML = seconds;
+
+            // Als de vakantie is bereikt, toon een bericht
+            if (distance < 0) {
+                clearInterval(countdownFunction);
+                document.getElementById("countdown").innerHTML = "Vreet smakelijk!!";
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
