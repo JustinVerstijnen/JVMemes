@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Is het tijd voor een visje? - justinverstijnen.nl</title>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(180deg, #ffffff, #f6f7f8);
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin: 0.5em;
+      text-align: center;
+    }
+
+    .countdown {
+      font-size: 1.5rem;
+      color: #666;
+      text-align: center;
+    }
+
+    .flying {
+      position: fixed;
+      pointer-events: none;
+      user-select: none;
+      will-change: transform, opacity;
+      animation: flyAcross linear forwards;
+    }
+
+    @keyframes flyAcross {
+      0% {
+        transform: translateX(-200px) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      90% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateX(110vw) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    .visdag {
+      color: #0077cc;
+      font-weight: 600;
+    }
+
+    footer {
+      position: absolute;
+      bottom: 1rem;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="message">Even checken of het tijd is voor een visje…</h1>
+  <div id="countdown" class="countdown"></div>
+  <footer>🐟 Justin Verstijnen Visdag Checker</footer>
+
+  <script>
+    const imgKibbeling = "https://www.vishandelvleuten.nl/wp-content/uploads/2020/11/vishandel-tomtuijp-vleuten-gebakken-vis-kibbeling.jpg";
+    const imgLekkerbek = "https://www.dirksvishandel.nl/uploads/webshop_products/db801062129ad818lekkerbek.jpg";
+
+    function getNextThursday13() {
+      const now = new Date();
+      const result = new Date(now);
+      // Bereken het aantal dagen tot volgende donderdag
+      const daysUntilThursday = (4 - now.getDay() + 7) % 7 || 7;
+      result.setDate(now.getDate() + daysUntilThursday);
+      result.setHours(13, 0, 0, 0);
+      return result;
+    }
+
+    function updateMessage() {
+      const now = new Date();
+      const day = now.getDay(); // 0 = zondag, 4 = donderdag
+      const msgEl = document.getElementById("message");
+      const countdownEl = document.getElementById("countdown");
+
+      const target = getNextThursday13();
+      const diff = target - now;
+
+      if (day === 4 && now.getHours() >= 13) {
+        msgEl.textContent = "🐟 Het is tijd voor een visje!";
+        countdownEl.textContent = "";
+        return;
+      }
+
+      msgEl.innerHTML = '<span class="visdag">Nog even wachten op visdag…</span>';
+      if (diff > 0) {
+        const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const m = Math.floor((diff / (1000 * 60)) % 60);
+        const s = Math.floor((diff / 1000) % 60);
+        countdownEl.textContent = `Nog ${d} dagen, ${h} uur, ${m} minuten en ${s} seconden tot het tijd is voor een visje!`;
+      } else {
+        countdownEl.textContent = "";
+      }
+    }
+
+    function spawnSnack() {
+      const snacks = [
+        { url: imgKibbeling, width: 100, height: 70 }, 
+        { url: imgLekkerbek, width: 120, height: 60 }
+      ];
+      const choice = snacks[Math.floor(Math.random() * snacks.length)];
+      const snack = document.createElement("img");
+      snack.className = "flying";
+      snack.src = choice.url;
+      snack.style.width = choice.width + "px";
+      snack.style.height = "auto";
+      snack.style.top = (Math.random() * 80) + "vh";
+      snack.style.animationDuration = (Math.random() * 4 + 6) + "s";
+      document.body.appendChild(snack);
+      snack.addEventListener("animationend", () => snack.remove());
+    }
+
+    // Update elke seconde
+    setInterval(updateMessage, 1000);
+    updateMessage();
+
+    // Laat snacks vliegen elke 5–10 seconden
+    function startSnackLoop() {
+      const next = Math.random() * 5000 + 5000;
+      spawnSnack();
+      setTimeout(startSnackLoop, next);
+    }
+    startSnackLoop();
+  </script>
+</body>
+</html>
