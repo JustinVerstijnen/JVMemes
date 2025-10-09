@@ -1,1 +1,362 @@
-hoi
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Krepr Kibbeling Kalculator</title>
+  <style>
+    :root {
+      --bg: #0f172a;          /* slate-900 */
+      --panel: #111827;       /* gray-900 */
+      --muted: #94a3b8;       /* slate-400 */
+      --text: #e5e7eb;        /* gray-200 */
+      --accent: #38bdf8;      /* sky-400 */
+      --accent-2: #22d3ee;    /* cyan-400 */
+      --ok: #34d399;          /* emerald-400 */
+      --warn: #f59e0b;        /* amber-500 */
+      --danger: #f87171;      /* red-400 */
+      --ring: rgba(56,189,248,0.35);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell,
+      Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 800px at 10% -10%, rgba(56,189,248,0.08), transparent 60%),
+                  radial-gradient(1000px 800px at 110% 10%, rgba(34,211,238,0.08), transparent 60%),
+                  var(--bg);
+      color: var(--text);
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+
+    header {
+      display: grid; gap: 8px; margin-bottom: 18px;
+    }
+    .title {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    }
+    .logo {
+      width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center;
+      background: linear-gradient(135deg, rgba(56,189,248,0.2), rgba(34,211,238,0.1));
+      border: 1px solid rgba(56,189,248,0.25);
+      box-shadow: 0 6px 20px rgba(56,189,248,0.12), inset 0 1px 0 rgba(255,255,255,0.06);
+      font-weight: 800; letter-spacing: 0.5px; color: var(--accent);
+    }
+    h1 { font-size: clamp(1.4rem, 1.2rem + 1.2vw, 2.1rem); margin: 0; }
+    .subtitle { color: var(--muted); font-size: 0.95rem; }
+
+    .grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 900px) {
+      .grid { grid-template-columns: 1.1fr 1fr; }
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.0));
+      border: 1px solid rgba(148,163,184,0.15);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: 0 10px 30px rgba(2,6,23,0.5);
+      backdrop-filter: blur(4px);
+    }
+
+    .section-title { font-weight: 700; margin: 0 0 8px; font-size: 1.05rem; }
+
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .grow { flex: 1 1 220px; }
+
+    input[type="text"], textarea, input[type="search"] {
+      width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(148,163,184,0.25);
+      background: #0b1022; color: var(--text);
+      outline: none; transition: border-color .15s, box-shadow .15s;
+    }
+    input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--ring); }
+
+    button {
+      appearance: none; border: 0; cursor: pointer; border-radius: 12px;
+      padding: 10px 14px; background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #06202c; font-weight: 700; letter-spacing: .2px;
+      box-shadow: 0 10px 20px rgba(56,189,248,0.25), inset 0 1px 0 rgba(255,255,255,0.3);
+      transition: transform .05s ease-in-out, filter .15s;
+    }
+    button:hover { filter: brightness(1.05); }
+    button:active { transform: translateY(1px); }
+    .btn-ghost {
+      background: transparent; color: var(--text); border: 1px solid rgba(148,163,184,0.25);
+      box-shadow: none;
+    }
+    .btn-danger { background: linear-gradient(135deg, var(--danger), #ef4444); color: #2c0101; }
+    .btn-warn { background: linear-gradient(135deg, var(--warn), #fbbf24); color: #2c1400; }
+
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; }
+    .stat {
+      background: #0b1022; border: 1px solid rgba(148,163,184,0.25); border-radius: 12px; padding: 12px;
+      text-align: center;
+    }
+    .stat .num { font-size: 1.4rem; font-weight: 800; }
+    .stat .label { color: var(--muted); font-size: 0.85rem; }
+
+    .pill { font-weight: 700; color: var(--ok); }
+
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid rgba(148,163,184,0.15); }
+    th { text-align: left; color: var(--muted); font-weight: 600; }
+    tbody tr:hover { background: rgba(148,163,184,0.06); }
+
+    .checkbox { width: 20px; height: 20px; }
+
+    .report-list { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+    .report-item { background: #0b1022; border: 1px solid rgba(148,163,184,0.25); padding: 10px 12px; border-radius: 10px; }
+
+    footer { margin-top: 24px; color: var(--muted); font-size: 0.85rem; text-align: center; }
+
+    /* Print: toon een net rapport */
+    @media print {
+      body { background: #fff; color: #000; }
+      .no-print { display: none !important; }
+      .card { border: 0; box-shadow: none; background: transparent; }
+      .report-item { background: #fff; border: 1px solid #ddd; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="title">
+        <div class="logo" aria-hidden="true">🐟</div>
+        <h1>Krepr Kibbeling Kalculator</h1>
+      </div>
+      <p class="subtitle">Voeg collega's toe, vink aan wie wil bestellen en zie direct voor hoeveel personen je moet bestellen. Formule: <strong>aantal bestellers + 50% (afgerond naar boven)</strong>.</p>
+    </header>
+
+    <div class="grid">
+      <!-- Personenbeheer -->
+      <section class="card" aria-labelledby="personen-title">
+        <h2 id="personen-title" class="section-title">Personen</h2>
+        <div class="row" style="margin-bottom:10px; gap: 10px;">
+          <input id="nameInput" class="grow" type="text" placeholder="Naam toevoegen… (Enter om toe te voegen)" aria-label="Naam toevoegen" />
+          <button id="addBtn" title="Voeg persoon toe">Toevoegen</button>
+          <button id="bulkBtn" class="btn-ghost" title="Meerdere namen in één keer">Meerdere namen</button>
+        </div>
+        <div id="bulkPanel" class="card" style="display:none; background:#0b1022;">
+          <p style="margin-top:0" class="subtitle">Plak hier meerdere namen (één per regel) en klik op <em>Importeren</em>.</p>
+          <textarea id="bulkTextarea" rows="5" placeholder="Jan Jansen\nFatima de Vries\n…"></textarea>
+          <div class="row" style="margin-top:8px;">
+            <button id="bulkImport">Importeren</button>
+            <button id="bulkCancel" class="btn-ghost">Annuleren</button>
+          </div>
+        </div>
+
+        <div class="row" style="margin: 6px 0 12px;">
+          <input id="search" class="grow" type="search" placeholder="Zoeken…" aria-label="Zoeken" />
+          <button id="selectAll" class="btn-warn" title="Iedereen aanvinken">Iedereen bestelt</button>
+          <button id="clearAll" class="btn-ghost" title="Iedereen uitvinken">Niemand bestelt</button>
+          <button id="resetBtn" class="btn-danger" title="Leeg de lijst">Reset</button>
+        </div>
+
+        <div class="table-wrap" style="overflow:auto; max-height: 360px; border-radius: 12px;">
+          <table aria-describedby="personen-title">
+            <thead>
+              <tr>
+                <th style="width:44px">Bestelt</th>
+                <th>Naam</th>
+                <th style="width:80px">Acties</th>
+              </tr>
+            </thead>
+            <tbody id="peopleTbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Overzicht & Rapport -->
+      <section class="card" aria-labelledby="rapport-title">
+        <h2 id="rapport-title" class="section-title">Overzicht</h2>
+        <div class="stats" role="group" aria-label="Statistieken">
+          <div class="stat"><div class="num" id="totalPeople">0</div><div class="label">Totaal personen</div></div>
+          <div class="stat"><div class="num" id="wanting">0</div><div class="label">Willen bestellen</div></div>
+          <div class="stat"><div class="num" id="orderFor">0</div><div class="label">Bestellen voor</div></div>
+        </div>
+
+        <div style="margin-top:12px;">
+          <p style="margin:6px 0;">
+            Formule: <code>aantal bestellers + 50%</code> ⇒ <span class="pill" id="formulaPreview">0 + 50% = 0 → <strong>0</strong></span>
+          </p>
+          <div class="row no-print" style="gap:10px; margin-top:8px;">
+            <button id="exportCsv">Exporteer CSV</button>
+            <button id="printReport" class="btn-ghost">Print rapport</button>
+          </div>
+        </div>
+
+        <h3 style="margin-top:14px;">Rapport: bestellers</h3>
+        <div id="reportList" class="report-list" aria-live="polite"></div>
+      </section>
+    </div>
+
+    <footer class="no-print">
+      Gemaakt voor het team · <em>Krepr Kibbeling Kalculator</em>
+    </footer>
+  </div>
+
+  <script>
+    // --- Storage & state -----------------------------------------------------
+    const STORAGE_KEY = 'krepr-kibbeling-people-v1';
+    let people = loadPeople();
+
+    function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+    function loadPeople() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+      catch { return []; }
+    }
+    function savePeople() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(people));
+    }
+
+    // --- DOM refs ------------------------------------------------------------
+    const tbody = document.getElementById('peopleTbody');
+    const totalEl = document.getElementById('totalPeople');
+    const wantingEl = document.getElementById('wanting');
+    const orderForEl = document.getElementById('orderFor');
+    const formulaPreviewEl = document.getElementById('formulaPreview');
+    const reportListEl = document.getElementById('reportList');
+
+    const nameInput = document.getElementById('nameInput');
+    const addBtn = document.getElementById('addBtn');
+    const bulkBtn = document.getElementById('bulkBtn');
+    const bulkPanel = document.getElementById('bulkPanel');
+    const bulkTextarea = document.getElementById('bulkTextarea');
+    const bulkImport = document.getElementById('bulkImport');
+    const bulkCancel = document.getElementById('bulkCancel');
+
+    const searchInput = document.getElementById('search');
+    const selectAllBtn = document.getElementById('selectAll');
+    const clearAllBtn = document.getElementById('clearAll');
+    const resetBtn = document.getElementById('resetBtn');
+
+    const exportCsvBtn = document.getElementById('exportCsv');
+    const printBtn = document.getElementById('printReport');
+
+    // --- Render --------------------------------------------------------------
+    function render() {
+      const q = (searchInput.value || '').trim().toLowerCase();
+      const filtered = q ? people.filter(p => p.name.toLowerCase().includes(q)) : people;
+
+      tbody.innerHTML = '';
+      for (const person of filtered) {
+        const tr = document.createElement('tr');
+
+        const tdCheck = document.createElement('td');
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.className = 'checkbox';
+        cb.checked = !!person.ordering;
+        cb.setAttribute('aria-label', `Bestelt ${person.name}`);
+        cb.addEventListener('change', () => {
+          person.ordering = cb.checked; update();
+        });
+        tdCheck.appendChild(cb);
+
+        const tdName = document.createElement('td');
+        tdName.textContent = person.name;
+
+        const tdAct = document.createElement('td');
+        const del = document.createElement('button');
+        del.textContent = 'Verwijder';
+        del.className = 'btn-ghost';
+        del.addEventListener('click', () => {
+          people = people.filter(p => p.id !== person.id);
+          update();
+        });
+        tdAct.appendChild(del);
+
+        tr.appendChild(tdCheck); tr.appendChild(tdName); tr.appendChild(tdAct);
+        tbody.appendChild(tr);
+      }
+
+      // Stats
+      const total = people.length;
+      const want = people.filter(p => p.ordering).length;
+      const orderFor = Math.ceil(want * 1.5); // aantal + 50%, afronden naar boven
+
+      totalEl.textContent = total;
+      wantingEl.textContent = want;
+      orderForEl.textContent = orderFor;
+      formulaPreviewEl.innerHTML = `${want} + 50% = ${Math.ceil(want * 0.5)} → <strong>${orderFor}</strong>`;
+
+      // Report list
+      reportListEl.innerHTML = '';
+      if (want === 0) {
+        const p = document.createElement('p');
+        p.className = 'subtitle';
+        p.textContent = 'Nog niemand geselecteerd.';
+        reportListEl.appendChild(p);
+      } else {
+        for (const p of people.filter(p => p.ordering)) {
+          const div = document.createElement('div');
+          div.className = 'report-item';
+          div.textContent = p.name;
+          reportListEl.appendChild(div);
+        }
+      }
+    }
+
+    function update() { savePeople(); render(); }
+
+    // --- Actions -------------------------------------------------------------
+    function addPerson(name) {
+      const clean = (name || '').trim();
+      if (!clean) return;
+      // unique-ish: prevent exact duplicates of name
+      const exists = people.some(p => p.name.toLowerCase() === clean.toLowerCase());
+      people.push({ id: uid(), name: exists ? `${clean} (${new Date().toLocaleTimeString()})` : clean, ordering: false });
+      nameInput.value = '';
+      update();
+    }
+
+    addBtn.addEventListener('click', () => addPerson(nameInput.value));
+    nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addPerson(nameInput.value); });
+
+    bulkBtn.addEventListener('click', () => { bulkPanel.style.display = 'block'; bulkTextarea.focus(); });
+    bulkCancel.addEventListener('click', () => { bulkPanel.style.display = 'none'; bulkTextarea.value = ''; });
+    bulkImport.addEventListener('click', () => {
+      const names = bulkTextarea.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+      for (const n of names) addPerson(n);
+      bulkTextarea.value = ''; bulkPanel.style.display = 'none';
+    });
+
+    searchInput.addEventListener('input', render);
+
+    selectAllBtn.addEventListener('click', () => {
+      people.forEach(p => p.ordering = true); update();
+    });
+    clearAllBtn.addEventListener('click', () => {
+      people.forEach(p => p.ordering = false); update();
+    });
+    resetBtn.addEventListener('click', () => {
+      if (confirm('Weet je zeker dat je de volledige lijst wilt leegmaken?')) {
+        people = []; update();
+      }
+    });
+
+    exportCsvBtn.addEventListener('click', () => {
+      const rows = [
+        ['Naam', 'Bestelt (ja/nee)'],
+        ...people.map(p => [p.name, p.ordering ? 'ja' : 'nee'])
+      ];
+      const csv = rows.map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'kibbeling-rapport.csv'; a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    printBtn.addEventListener('click', () => window.print());
+
+    // Initial render
+    render();
+  </script>
+</body>
+</html>
