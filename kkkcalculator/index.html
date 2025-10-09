@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Krepr Kibbeling Kalculator (KKK) - justinverstijnen.nl</title>
+  <style>
+    :root {
+      --bg: #f9fafb;
+      --panel: #ffffff;
+      --muted: #6b7280;
+      --text: #111827;
+      --accent-blue: #38bdf8;
+      --accent-green: #22c55e;
+      --danger-light: #fecaca;
+      --danger-text: #b91c1c;
+      --border: #e5e7eb;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+    }
+
+    h1 { font-size: 1.9rem; margin: 0 0 .25rem; }
+    .subtitle { color: var(--muted); margin: 0 0 1rem; }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,.03);
+      margin-bottom: 20px;
+    }
+
+    .person-inputs { display: flex; gap: 8px; margin-bottom: 12px; }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #fff;
+      font-size: 1rem;
+    }
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(56,189,248,.3);
+    }
+
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 600;
+      background: var(--accent-blue);
+      color: #fff;
+      transition: background .15s;
+    }
+    button:hover { background: #0ea5e9; }
+    .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
+
+    /* Subtiele verwijderknoppen */
+    .btn-remove {
+      background: var(--danger-light);
+      color: var(--danger-text);
+      border: 1px solid #fca5a5;
+      font-weight: 500;
+    }
+    .btn-remove:hover {
+      background: #fca5a5;
+      color: #7f1d1d;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 8px; border-bottom: 1px solid var(--border); text-align: left; }
+    th { color: var(--muted); font-weight: 600; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .stat {
+      border-radius: 10px;
+      text-align: center;
+      padding: 12px;
+      color: #fff;
+    }
+    .stat.blue { background: var(--accent-blue); }
+    .stat.green { background: var(--accent-green); }
+    .stat a {
+      color: inherit;
+      text-decoration: none;
+      display: block;
+    }
+    .stat a:hover {
+      opacity: 0.9;
+      cursor: pointer;
+    }
+    .num { font-weight: 800; font-size: 1.35rem; }
+    .label { font-size: .9rem; opacity: .9; }
+
+    .actions { display: flex; gap: 10px; margin-top: 16px; }
+
+    /* Print minimalistisch */
+    @page { margin: 12mm; }
+    @media print {
+      body { padding: 0; }
+      .no-print { display: none !important; }
+      .card { box-shadow: none; border: 0; padding: 0; margin: 0; }
+      #printView { display: block !important; }
+    }
+
+    #printView { display: none; color: #000; }
+    #printTitle { font-size: 18pt; margin: 0 0 2mm; }
+    #printMeta { font-size: 10pt; color: #333; margin: 0 0 4mm; }
+    #printStats { font-size: 11pt; margin: 0 0 4mm; }
+    #printList { list-style: decimal; padding-left: 6mm; margin: 0; }
+    #printList li { font-size: 11pt; line-height: 1.25; margin: 1.5mm 0; }
+  </style>
+</head>
+<body>
+  <header class="no-print">
+    <h1>🐟 Krepr Kibbeling Kalculator (KKK)</h1>
+    <p class="subtitle">
+      Voeg collega's toe en zie direct voor hoeveel personen je moet bestellen om lekkere vette vis te kanen.
+      Daarnaast kun je de lijst ook exporteren naar CSV of printen voor je tikkie-administratie.
+    </p>
+  </header>
+
+  <!-- Personen -->
+  <section class="card no-print">
+    <h2 style="margin-top:0">Personen</h2>
+    <div class="person-inputs">
+      <input id="nameInput" type="text" placeholder="Naam toevoegen… (Enter om toe te voegen)" />
+      <button id="addBtn">Toevoegen</button>
+    </div>
+
+    <div class="table-wrap" style="overflow:auto; max-height: 360px; border-radius: 10px; border: 1px solid var(--border);">
+      <table>
+        <thead>
+          <tr><th>Naam</th><th style="width:80px">Acties</th></tr>
+        </thead>
+        <tbody id="peopleTbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Overzicht -->
+  <section class="card no-print">
+    <h2 style="margin-top:0">Overzicht</h2>
+    <div class="stats">
+      <div class="stat blue">
+        <div class="num" id="totalPeople">0</div>
+        <div class="label">Totaal personen</div>
+      </div>
+      <div class="stat green">
+        <a href="tel:+31625075811" title="Bel om te bestellen">
+          <div class="num" id="orderFor">0</div>
+          <div class="label">Bestellen voor</div>
+        </a>
+      </div>
+    </div>
+    <p style="margin-top: 10px;">Formule: <code>aantal personen + 50% + afronden naar boven</code> ⇒ <span id="formulaPreview">0 + 50% = 0 → <strong>0</strong></span></p>
+
+    <div class="actions">
+      <button id="exportCsv">Exporteer CSV</button>
+      <button id="printReport" class="btn-ghost">Print rapport</button>
+    </div>
+  </section>
+
+  <!-- PRINT -->
+  <section id="printView">
+    <h1 id="printTitle">Krepr Kibbeling Kalculator — Rapport</h1>
+    <p id="printMeta"></p>
+    <p id="printStats"></p>
+    <ol id="printList"></ol>
+  </section>
+
+  <footer class="no-print" style="text-align:center; color:var(--muted); font-size:.9rem;">
+    Gemaakt voor het dikke team · <em>Krepr Kibbeling Kalculator</em>
+  </footer>
+
+  <script>
+    const STORAGE_KEY = 'krepr-kibbeling-people-v1';
+    let people = loadPeople();
+
+    function loadPeople() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+      catch { return []; }
+    }
+    function savePeople() { localStorage.setItem(STORAGE_KEY, JSON.stringify(people)); }
+
+    function pad(n){ return String(n).padStart(2,'0'); }
+    function formatDateTime(d){
+      return `${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+    function formatDateForFilename(d){
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    }
+
+    const tbody = document.getElementById('peopleTbody');
+    const totalEl = document.getElementById('totalPeople');
+    const orderForEl = document.getElementById('orderFor');
+    const formulaPreviewEl = document.getElementById('formulaPreview');
+    const nameInput = document.getElementById('nameInput');
+    const addBtn = document.getElementById('addBtn');
+    const exportCsvBtn = document.getElementById('exportCsv');
+    const printBtn = document.getElementById('printReport');
+    const printMeta = document.getElementById('printMeta');
+    const printStats = document.getElementById('printStats');
+    const printList = document.getElementById('printList');
+
+    function render() {
+      tbody.innerHTML = '';
+      for (const person of people) {
+        const tr = document.createElement('tr');
+        const tdName = document.createElement('td');
+        tdName.textContent = person.name;
+
+        const tdAct = document.createElement('td');
+        const del = document.createElement('button');
+        del.textContent = 'Verwijder';
+        del.className = 'btn-remove';
+        del.addEventListener('click', () => { people = people.filter(p => p !== person); update(); });
+        tdAct.appendChild(del);
+
+        tr.append(tdName, tdAct);
+        tbody.appendChild(tr);
+      }
+
+      const total = people.length;
+      const orderFor = Math.ceil(total * 1.5);
+      totalEl.textContent = total;
+      orderForEl.textContent = orderFor;
+      formulaPreviewEl.innerHTML = `${total} + 50% = ${Math.ceil(total * 0.5)} → <strong>${orderFor}</strong>`;
+    }
+
+    function update() { savePeople(); render(); }
+
+    function addPerson(name) {
+      const clean = (name || '').trim();
+      if (!clean) return;
+      people.push({ name: clean });
+      nameInput.value = '';
+      update();
+    }
+
+    addBtn.addEventListener('click', () => addPerson(nameInput.value));
+    nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addPerson(nameInput.value); });
+
+    exportCsvBtn.addEventListener('click', () => {
+      const now = new Date();
+      const dateHuman = formatDateTime(now);
+      const dateFile = formatDateForFilename(now);
+      const rows = [
+        [`Exportdatum: ${dateHuman}`],
+        [],
+        ['Naam'],
+        ...people.map(p => [p.name])
+      ];
+      const csv = rows.map(r => r.join(';')).join('\\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `kibbeling-rapport_${dateFile}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    function buildPrintView(){
+      const now = new Date();
+      const dateHuman = formatDateTime(now);
+      const bestellers = people.map(p => p.name);
+      const orderFor = Math.ceil(bestellers.length * 1.5);
+      document.getElementById('printTitle').textContent = 'Krepr Kibbeling Kalculator — Rapport';
+      printMeta.textContent = `Exportdatum: ${dateHuman}`;
+      printStats.textContent = `Aantal personen: ${bestellers.length} · Bestellen voor: ${orderFor}`;
+      printList.innerHTML = '';
+      bestellers.forEach(n => {
+        const li = document.createElement('li');
+        li.textContent = n;
+        printList.appendChild(li);
+      });
+    }
+
+    printBtn.addEventListener('click', () => { buildPrintView(); window.print(); });
+    render();
+  </script>
+</body>
+</html>
