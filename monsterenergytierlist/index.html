@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monster Energy Tier List</title>
+  <style>
+    :root{
+      --row-min-h: 180px;
+      --label-w: 140px;
+      --gap: 10px;
+      --board-bg: #222;
+      --line: #333;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      margin: 0;
+      text-align: center;
+    }
+
+    h1 { margin: 14px 0 6px; }
+
+    /* Container voor de topknoppen */
+    .top-buttons {
+      position: fixed;
+      top: 15px;
+      right: 20px;
+      display: flex;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    /* Algemene knopstijl */
+    .top-button {
+      background: linear-gradient(90deg, #0a66ff, #09a6ff);
+      color: white;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px #0006;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .top-button svg {
+      width: 18px;
+      height: 18px;
+      fill: white;
+    }
+
+    .top-button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 3px 8px #0009;
+      filter: brightness(1.1);
+    }
+
+    .tier-list {
+      width: min(1100px, 94vw);
+      margin: 70px auto 12px; /* ruimte boven voor knoppen */
+      border: 2px solid var(--line);
+      background: #000;
+    }
+
+    .tier {
+      display: flex;
+      align-items: stretch;
+      min-height: var(--row-min-h);
+      border-bottom: 1px solid var(--line);
+      background: var(--board-bg);
+    }
+    .tier:last-child { border-bottom: 0; }
+
+    .tier-label {
+      flex: 0 0 var(--label-w);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.1em;
+      border-right: 2px solid #000;
+      user-select: none;
+    }
+
+    .dropzone {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
+      grid-auto-rows: 170px;
+      gap: var(--gap);
+      padding: 10px;
+      justify-content: center;
+      align-content: start;
+      align-items: center;
+      min-height: var(--row-min-h);
+    }
+
+    .dropzone.is-over { outline: 3px dashed #fff8; outline-offset: -6px; }
+
+    .inventory {
+      width: min(1100px, 94vw);
+      margin: 18px auto 10px;
+      border: 2px solid var(--line);
+      background: var(--board-bg);
+      padding: 10px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
+      grid-auto-rows: 170px;
+      gap: var(--gap);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .can {
+      max-width: 80px;
+      max-height: 160px;
+      width: 100%;
+      height: auto;
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      border-radius: 6px;
+      background: #0004;
+      transition: transform 0.1s ease-in-out, box-shadow 0.15s ease-in-out;
+      box-shadow: 0 0 4px #000a;
+    }
+
+    .can:hover { box-shadow: 0 0 6px #00ff5c80; }
+    .can:active { cursor: grabbing; transform: scale(0.95); }
+
+    .can img {
+      max-height: 100%;
+      max-width: 100%;
+      object-fit: contain;
+      pointer-events: none;
+      display: block;
+    }
+
+    .tier[data-tier="S Tier"]      .tier-label { background:#e84141; }
+    .tier[data-tier="Great"]       .tier-label { background:#e67b39; }
+    .tier[data-tier="Good"]        .tier-label { background:#e6c03a; color:#222; }
+    .tier[data-tier="Alright"]     .tier-label { background:#6ee071; color:#223; }
+    .tier[data-tier="No Thanks"]   .tier-label { background:#74a8e6; color:#223; }
+    .tier[data-tier="Havent Tried"] .tier-label { background:#bfbfbf; color:#222; }
+  </style>
+</head>
+<body>
+  <!-- Top knoppen -->
+  <div class="top-buttons">
+    <button class="top-button" id="saveButton" title="Download Tier List">
+      <!-- Correct download-icoon -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 3a1 1 0 0 1 1 1v8.586l2.293-2.293a1 1 0 1 1 1.414 1.414l-4.004 4.004a1 1 0 0 1-1.414 0L7.286 11.707a1 1 0 1 1 1.414-1.414L11 12.586V4a1 1 0 0 1 1-1zM5 20a2 2 0 0 1-2-2v-1a1 1 0 1 1 2 0v1h14v-1a1 1 0 1 1 2 0v1a2 2 0 0 1-2 2H5z"/>
+      </svg>
+      Download
+    </button>
+
+    <button class="top-button" id="customButton">⭐ My Tier-list</button>
+  </div>
+
+  <h1>Monster Energy Tier List</h1>
+
+  <div class="tier-list" id="tierList">
+    <div class="tier" data-tier="S Tier"><div class="tier-label">S Tier</div><div class="dropzone"></div></div>
+    <div class="tier" data-tier="Great"><div class="tier-label">Great</div><div class="dropzone"></div></div>
+    <div class="tier" data-tier="Good"><div class="tier-label">Good</div><div class="dropzone"></div></div>
+    <div class="tier" data-tier="Alright"><div class="tier-label">Meh...</div><div class="dropzone"></div></div>
+    <div class="tier" data-tier="No Thanks"><div class="tier-label">No Thanks</div><div class="dropzone"></div></div>
+    <div class="tier" data-tier="Havent Tried"><div class="tier-label">Haven't Tried</div><div class="dropzone"></div></div>
+  </div>
+
+  <h2>Refrigerator 🧊</h2>
+  <div class="inventory dropzone" id="inventory" aria-label="Refrigerator"></div>
+
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <script>
+    const TOTAL_CANS = 162;
+    const PATH = "assets";
+    const PREFIX = "monster_";
+    const PAD = 2;
+
+    const PRIORITY = [1,21,22,25,26,27,28,30,32,33,34,36,37,43,44,45];
+    const REMOVE = [119,85,91,106,107,108,114,136,137,144,147];
+
+    
+    const allCans = [];
+    for (let i = 1; i <= TOTAL_CANS; i++) {
+      if (REMOVE.includes(i)) continue;
+      if (!PRIORITY.includes(i)) allCans.push(i);
+    }
+    const finalOrder = [...PRIORITY, ...allCans];
+
+    const inventory = document.getElementById("inventory");
+
+    function createCan(num){
+      const id = `${PREFIX}${String(num).padStart(PAD,'0')}`;
+      const el = document.createElement("div");
+      el.className = "can";
+      el.draggable = true;
+      el.dataset.id = id;
+      el.innerHTML = `<img loading="lazy" src="${PATH}/${id}.png" alt="${id}">`;
+      return el;
+    }
+
+    finalOrder.forEach(num => inventory.appendChild(createCan(num)));
+
+    
+    let draggedId = null;
+    document.addEventListener("dragstart", e => {
+      const can = e.target.closest(".can");
+      if (!can) return;
+      draggedId = can.dataset.id;
+      e.dataTransfer.setData("text/plain", draggedId);
+      e.dataTransfer.effectAllowed = "move";
+    });
+
+    const zones = document.querySelectorAll(".dropzone");
+    zones.forEach(zone => {
+      zone.addEventListener("dragover", e => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        zone.classList.add("is-over");
+      });
+      zone.addEventListener("dragleave", () => zone.classList.remove("is-over"));
+      zone.addEventListener("drop", e => {
+        e.preventDefault();
+        zone.classList.remove("is-over");
+        const id = e.dataTransfer.getData("text/plain") || draggedId;
+        if (!id) return;
+        const node = document.querySelector(`.can[data-id="${id}"]`);
+        if (node) zone.appendChild(node);
+        saveProgress();
+        draggedId = null;
+      });
+    });
+
+    
+    function saveProgress(){
+      const data = {};
+      document.querySelectorAll(".dropzone").forEach(zone=>{
+        const tier = zone.closest(".tier")?.dataset?.tier || "inventory";
+        const ids = Array.from(zone.querySelectorAll(".can")).map(c=>c.dataset.id);
+        data[tier] = ids;
+      });
+      localStorage.setItem("monster_tierlist_v1", JSON.stringify(data));
+    }
+
+    
+    function loadProgress(){
+      const raw = localStorage.getItem("monster_tierlist_v1");
+      if(!raw) return;
+      try{
+        const data = JSON.parse(raw);
+        Object.entries(data).forEach(([tier, ids])=>{
+          const zone = tier==="inventory"
+            ? document.getElementById("inventory")
+            : document.querySelector(`.tier[data-tier="${tier}"] .dropzone`);
+          if(!zone) return;
+          ids.forEach(id=>{
+            const node = document.querySelector(`.can[data-id="${id}"]`);
+            if(node) zone.appendChild(node);
+          });
+        });
+      }catch(e){ console.warn("Cannot load progress:", e); }
+    }
+
+    window.addEventListener("DOMContentLoaded", loadProgress);
+
+    
+    document.getElementById("saveButton").addEventListener("click", async () => {
+      try {
+        const node = document.getElementById("tierList");
+        const canvas = await html2canvas(node, { backgroundColor: null, useCORS: true });
+        canvas.toBlob(blob => {
+          if (!blob) {
+            const dataURL = canvas.toDataURL("image/png");
+            const a = document.createElement("a");
+            a.download = "monster-tier-list.png";
+            a.href = dataURL;
+            a.click();
+            return;
+          }
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.download = "monster-tier-list.png";
+          a.href = url;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }, "image/png");
+      } catch (err) {
+        console.error("Export mislukt:", err);
+        alert("Cannot export your monster-tiering list. Check the console for errors.");
+      }
+    });
+
+    
+document.getElementById("customButton").addEventListener("click", () => {
+  window.open("mytier.png", "_blank");
+});
+  </script>
+</body>
+</html>
