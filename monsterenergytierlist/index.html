@@ -184,7 +184,7 @@
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script>
     const TOTAL_CANS = 162;
-    const PATH = "assets";
+    const PATH = "./assets";
     const PREFIX = "monster_";
     const PAD = 2;
 
@@ -207,7 +207,7 @@
       el.className = "can";
       el.draggable = true;
       el.dataset.id = id;
-      el.innerHTML = `<img loading="lazy" src="assets/${id}.png" alt="${id}">`;
+      el.innerHTML = `<img loading="lazy" src="${PATH}/${id}.png" alt="${id}">`;
       return el;
     }
 
