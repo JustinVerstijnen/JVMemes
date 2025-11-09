@@ -7,7 +7,7 @@ body {
 }
 
 header {
-  background: #111827;
+  background: radial-gradient(circle at center, #172711 0%, #111827 100%);
   color: white;
   padding: 20px;
   text-align: center;
@@ -31,14 +31,7 @@ h2 {
   padding: 20px;
   margin-bottom: 20px;
   box-shadow: 0 6px 16px rgba(0,0,0,0.05);
-  transition: transform 0.2s ease, opacity 0.3s ease;
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-.concert-card.show {
-  opacity: 1;
-  transform: translateY(0);
+  transition: transform 0.2s ease;
 }
 
 .concert-card:hover {
@@ -77,18 +70,19 @@ h2 {
 }
 
 .countdown.finished {
-  color: #16a34a;
+  color: #a39f9d;
 }
 
+/* Archief-knop */
 .archive-toggle {
   cursor: pointer;
   background: #e5e7eb;
   padding: 10px;
-  border-radius: 8px;
+  border-radius: 45px;
   user-select: none;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
   width: fit-content;
   transition: background 0.2s ease;
 }
@@ -102,6 +96,7 @@ h2 {
   transition: transform 0.3s ease;
 }
 
+/* Uitklapbaar archief met animatie */
 #archive-list {
   overflow: hidden;
   transition: max-height 0.5s ease, opacity 0.5s ease;
@@ -111,5 +106,5 @@ h2 {
 
 #archive-list.expanded {
   opacity: 1;
-  max-height: 2000px;
+  max-height: 200000px; /* genoeg ruimte voor veel concerten */
 }
