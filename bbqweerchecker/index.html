@@ -430,21 +430,25 @@
         // Eindoordeel + animatie
         let mode = "wait";
 
-        if(chosen.temp > 32){
-          mode = "burn";
-          els.verdict.textContent = "Veel te warm! ☀️🔥";
-          els.verdict.className = "verdict bad";
-        } else if(tempState === "good" && rainState === "good" && windState !== "bad"){
-          mode = "ok";
-          els.verdict.textContent = "Ja, steek aan dat ding Pieter!";
-          els.verdict.className = "verdict ok";
-        } else {
-          mode = "wait";
-          els.verdict.textContent = "Nee, dat wordt thuisbezorgd!";
-          els.verdict.className = "verdict bad";
-        }
+if (bft >= 5) {
+  mode = "wait";
+  els.verdict.textContent = "Ik vlees...eehh vrees dat je wegwaait!";
+  els.verdict.className = "verdict bad";
+} else if (chosen.temp > 32) {
+  mode = "burn";
+  els.verdict.textContent = "Veel te warm! ☀️🔥";
+  els.verdict.className = "verdict bad";
+} else if (tempState === "good" && rainState === "good" && windState !== "bad") {
+  mode = "ok";
+  els.verdict.textContent = "Ja, steek aan dat ding Pieter!";
+  els.verdict.className = "verdict ok";
+} else {
+  mode = "wait";
+  els.verdict.textContent = "Nee, dat wordt thuisbezorgd!";
+  els.verdict.className = "verdict bad";
+}
 
-        renderAnim(mode);
+renderAnim(mode);
       }catch(e){
         console.error(e);
         els.verdict.textContent = "Fout bij ophalen gegevens";
