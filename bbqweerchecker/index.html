@@ -82,10 +82,9 @@
       padding:14px;
       margin-top:16px;
       font-size:15px;
-      color:#374151;
+      color:#696969;
     }
 
-    /* BBQ animatie */
     .stage{
       position:relative;
       height:260px;
@@ -170,7 +169,6 @@
       100%{ transform: scale(1.08) rotate(3deg) translateY(-8px) }
     }
 
-    /* Wolken */
     .sky{
       position:relative;
       height:260px;
@@ -199,7 +197,6 @@
       100%{ transform: translateX(140%)}
     }
 
-    /* Raindrops */
     .raindrop{
       position:absolute;
       top:80px;
@@ -214,7 +211,6 @@
       100%{ transform: translateY(160px); opacity:0 }
     }
 
-    /* Zon & verbranden */
     .sun-stage{
       position:relative;
       height:260px;
@@ -425,7 +421,7 @@
         setBoxColor(els.windBox, windState);
 
         els.timeInfo.textContent =
-          `Berekend op basis van voorspelling rond: ${chosen.time.toLocaleTimeString('nl-NL',{timeStyle:'short'})}`;
+          `Berekend op basis van voorspelling rond: ${chosen.time.toLocaleTimeString('nl-NL',{timeStyle:'short'})} uur.`;
 
         // Eindoordeel + animatie
         let mode = "wait";
