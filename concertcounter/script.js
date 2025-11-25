@@ -159,6 +159,9 @@ function renderConcerts() {
   const upcoming = concerts.filter(c => new Date(c.datetime) >= now).sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
   const past = concerts.filter(c => new Date(c.datetime) < now).sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
 
+  const archiveToggle = document.querySelector(".archive-toggle");
+  archiveToggle.innerHTML = `<span class="arrow">▼</span> Archief (${past.length})`;
+
   upcoming.forEach(c => upcomingList.appendChild(createConcertCard(c, false)));
   past.forEach(c => archiveList.appendChild(createConcertCard(c, true)));
 
@@ -178,3 +181,4 @@ document.addEventListener("DOMContentLoaded", () => {
     arrow.style.transform = archive.classList.contains("expanded") ? "rotate(180deg)" : "rotate(0deg)";
   });
 });
+
