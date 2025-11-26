@@ -96,7 +96,7 @@ function createConcertCard(concert, isPast) {
 
 function formatDate(datetime) {
   const date = new Date(datetime);
-  const options = { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" };
+  const options = { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" };
   return date.toLocaleDateString("nl-NL", options).replace(" om", " –");
 }
 
@@ -183,5 +183,6 @@ document.addEventListener("DOMContentLoaded", () => {
     arrow.style.transform = archive.classList.contains("expanded") ? "rotate(180deg)" : "rotate(0deg)";
   });
 });
+
 
 
