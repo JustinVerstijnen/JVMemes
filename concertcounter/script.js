@@ -67,7 +67,9 @@ const concerts = [
 { artist: "Sabaton", location: "Ziggo Dome – Amsterdam", datetime: "2025-12-01T19:00:00" },
 { artist: "MetallicA", location: "Deutsche Bank Park – Frankfurt", datetime: "2026-05-22T20:00:00" },
 { artist: "MetallicA", location: "Deutsche Bank Park – Frankfurt", datetime: "2026-05-24T20:00:00" },
-{ artist: "Iron Maiden", location: "Ziggo Dome – Amsterdam", datetime: "2026-06-10T20:00:00" }
+{ artist: "Iron Maiden", location: "Ziggo Dome – Amsterdam", datetime: "2026-06-10T20:00:00" },
+{ artist: "Guns N' Roses", location: "Ziggo Dome – Amsterdam", datetime: "2026-06-18T20:00:00" },
+{ artist: "Guns N' Roses", location: "Ziggo Dome – Amsterdam", datetime: "2026-06-20T20:00:00" }
 ];
 
 function createConcertCard(concert, isPast) {
@@ -181,4 +183,5 @@ document.addEventListener("DOMContentLoaded", () => {
     arrow.style.transform = archive.classList.contains("expanded") ? "rotate(180deg)" : "rotate(0deg)";
   });
 });
+
 
