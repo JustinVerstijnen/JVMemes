@@ -13,7 +13,7 @@ const concerts = [
 { artist: "Rammstein", location: "De Kuip - Rotterdam", datetime: "2019-06-25T20:45:00" },
 { artist: "Live", location: "Paradiso - Amsterdam", datetime: "2019-07-02T20:30:00" },
 { artist: "Alter Bridge", location: "AFAS Live - Amsterdam", datetime: "2019-12-10T20:00:00" },
-{ artist: "Steel Panther", location: "Tivoli Vredenburg - Utrecht", datetime: "2019-02-02T20:00:00" },
+{ artist: "Steel Panther", location: "Tivoli Vredenburg - Utrecht", datetime: "2020-02-02T20:00:00" },
 { artist: "A-ha", location: "AFAS Live - Amsterdam", datetime: "2022-05-04T21:00:00" },
 { artist: "Disturbed", location: "Ziggo Dome - Amsterdam", datetime: "2025-10-14T20:00:00" },
 { artist: "Red Hot Chili Peppers", location: "Goffertpark - Nijmegen", datetime: "2022-06-10T20:30:00" },
@@ -330,4 +330,5 @@ document.addEventListener("DOMContentLoaded", () => {
       : "rotate(0deg)";
   });
 });
+
 
