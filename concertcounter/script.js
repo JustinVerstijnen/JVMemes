@@ -1,10 +1,13 @@
-// Concertgegevens - voeg hier nieuwe concerten toe
+// =========================================================
+// CONCERTGEGEVENS
+// =========================================================
 const concerts = [
 { artist: "Guns N' Roses", location: "Goffertpark - Nijmegen", datetime: "2017-07-12T19:30:00" },
 { artist: "Toto", location: "Ziggo Dome - Amsterdam", datetime: "2018-03-17T20:00:00" }, 
 { artist: "Guus Meeuwis", location: "Philips Stadion - Eindhoven", datetime: "2018-06-09T20:30:00" }, 
 { artist: "Guns N' Roses", location: "Goffertpark - Nijmegen", datetime: "2018-07-04T19:30:00" },  
 { artist: "Europe", location: "013 - Tilburg", datetime: "2018-09-26T21:00:00" },
+{ artist: "Kensington", location: "Ijsselhallen - Zwolle", datetime: "2018-11-10T22:00:00" }, 
 { artist: "Slash & Myles Kennedy", location: "AFAS Live - Amsterdam", datetime: "2019-02-24T20:30:00" },
 { artist: "The Dire Straits Experience", location: "Music Club - Kampen", datetime: "2019-05-18T21:00:00" },
 { artist: "Metallica", location: "Johan Cruijff Arena - Amsterdam", datetime: "2019-06-11T20:45:00" },
@@ -56,6 +59,7 @@ const concerts = [
 { artist: "Avenged Sevenfold", location: "Ziggo Dome - Amsterdam", datetime: "2024-06-24T21:00:00" },
 { artist: "Bruce Springsteen", location: "Goffertpark - Nijmegen", datetime: "2024-06-27T20:00:00" },
 { artist: "Deep Purple", location: "Ziggo Dome - Amsterdam", datetime: "2024-10-29T21:00:00" },
+{ artist: "Queen Must Go On", location: "Ahoy - Rotterdam", datetime: "2024-11-24T20:00:00" },
 { artist: "Within Temptation", location: "Ziggo Dome - Amsterdam", datetime: "2024-12-06T21:15:00" },
 { artist: "Toto", location: "Gelredome - Arnhem", datetime: "2025-02-08T21:00:00" },
 { artist: "Ghost", location: "Ziggo Dome - Amsterdam", datetime: "2025-05-08T21:00:00" },
@@ -77,7 +81,7 @@ const concerts = [
 ];
 
 // =========================================================
-// HULPFUNCTIE: verschil in jaren, maanden, dagen
+// HULPFUNCTIES
 // =========================================================
 function diffYMDDays(target, now) {
   let years = now.getFullYear() - target.getFullYear();
@@ -98,12 +102,9 @@ function diffYMDDays(target, now) {
   return { years, months, days };
 }
 
-
-
 // =========================================================
-// STATISTIEKEN OPBOUWEN
+// STATISTIEKEN
 // =========================================================
-
 function generateStats(past) {
   const artistStats = {};
   const locationStats = {};
@@ -122,20 +123,77 @@ function generateStats(past) {
   const sortedLocations = Object.entries(locationStats).sort((a,b)=>b[1]-a[1]);
 
   const weekdayNames = ["Zondag","Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag"];
-  const weekdayOrder = [1,2,3,4,5,6,0]; // maandag–zondag
+  const weekdayOrder = [1,2,3,4,5,6,0];
 
   return { sortedArtists, sortedLocations, weekdayStats, weekdayNames, weekdayOrder };
 }
 
+// =========================================================
+// NIEUWE STATISTIEKEN
+// =========================================================
+function generateYearStats(past) {
+  const stats = {};
+  const firstYear = 2017;
+  const currentYear = new Date().getFullYear();
 
+  for (let y = firstYear; y <= currentYear; y++) stats[y] = 0;
+
+  past.forEach(c => {
+    const year = new Date(c.datetime).getFullYear();
+    if (stats[year] !== undefined) stats[year]++;
+  });
+
+  return stats;
+}
+
+function generateExtraStats(past) {
+  if (past.length === 0) return {};
+
+  const monthCounts = {};
+  const yearCounts = {};
+  const artists = new Set();
+  const locations = new Set();
+  const dates = past.map(c => new Date(c.datetime)).sort((a, b) => a - b);
+
+  past.forEach(c => {
+    const d = new Date(c.datetime);
+    const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+
+    monthCounts[ym] = (monthCounts[ym] || 0) + 1;
+    yearCounts[d.getFullYear()] = (yearCounts[d.getFullYear()] || 0) + 1;
+
+    artists.add(c.artist);
+    locations.add(c.location);
+  });
+
+  const busiestMonth = Object.entries(monthCounts).sort((a,b)=>b[1]-a[1])[0];
+  const busiestYear  = Object.entries(yearCounts).sort((a,b)=>b[1]-a[1])[0];
+
+  let totalDiff = 0;
+  for (let i = 1; i < dates.length; i++) {
+    totalDiff += (dates[i] - dates[i - 1]) / (1000 * 60 * 60 * 24);
+  }
+  const avgDaysBetween = dates.length > 1 ? Math.round(totalDiff / (dates.length - 1)) : 0;
+
+  return {
+    busiestMonth,
+    busiestYear,
+    totalConcerts: past.length,
+    uniqueArtists: artists.size,
+    uniqueLocations: locations.size,
+    avgDaysBetween
+  };
+}
 
 // =========================================================
-// STATISTIEKENBLOK RENDEREN
+// RENDER STATISTIEKEN
 // =========================================================
-
 function renderStatsBlock(past) {
   const { sortedArtists, sortedLocations, weekdayStats, weekdayNames, weekdayOrder } =
     generateStats(past);
+
+  const yearStats = generateYearStats(past);
+  const extra = generateExtraStats(past);
 
   const container = document.createElement("div");
   container.style.marginTop = "30px";
@@ -143,53 +201,70 @@ function renderStatsBlock(past) {
   container.style.background = "#eef2f7";
   container.style.borderRadius = "12px";
 
+  // Artiesten
   const colArtists = `
     <div style="min-width:200px; flex:1;">
       <h3>🎤 Artiesten</h3>
-      <ul>
-        ${sortedArtists.map(([name,val])=>`<li>${name}: <strong>${val}×</strong></li>`).join("")}
-      </ul>
-    </div>
-  `;
+      <ul>${sortedArtists.map(([n,v]) => `<li>${n}: <strong>${v}×</strong></li>`).join("")}</ul>
+    </div>`;
 
+  // Locaties
   const colLoc = `
     <div style="min-width:200px; flex:1;">
       <h3>📍 Locaties</h3>
-      <ul>
-        ${sortedLocations.map(([loc,val])=>`<li>${loc}: <strong>${val}×</strong></li>`).join("")}
-      </ul>
-    </div>
-  `;
+      <ul>${sortedLocations.map(([l,v]) => `<li>${l}: <strong>${v}×</strong></li>`).join("")}</ul>
+    </div>`;
 
-  const colDays = `
+  // Per dag/maand + Jaren hieronder (zelfde kolom!)
+  const colDaysAndYears = `
     <div style="min-width:200px; flex:1;">
-      <h3>📅 Weekdagen</h3>
+      <h3>📅 Per dag/maand</h3>
       <ul>
         ${weekdayOrder
           .map(i => `<li>${weekdayNames[i]}: <strong>${weekdayStats[i]}×</strong></li>`)
           .join("")}
       </ul>
-    </div>
-  `;
+
+      <div style="height:12px;"></div> <!-- witregel -->
+
+      <ul>
+        ${Object.entries(yearStats)
+          .map(([year, count]) => `<li>${year}: <strong>${count}×</strong></li>`)
+          .join("")}
+      </ul>
+    </div>`;
+
+  const colExtra = `
+    <div style="width:100%; margin-top:20px;">
+      <h3>📌 Overige statistieken</h3>
+      <ul>
+        <li>Drukste maand ooit: <strong>${extra.busiestMonth[0]}</strong> (${extra.busiestMonth[1]}×)</li>
+        <li>Jaar met meeste concerten: <strong>${extra.busiestYear[0]}</strong> (${extra.busiestYear[1]}×)</li>
+        <li>Unieke artiesten: <strong>${extra.uniqueArtists}</strong></li>
+        <li>Unieke zalen: <strong>${extra.uniqueLocations}</strong></li>
+        <li>Totaal bezocht: <strong>${extra.totalConcerts}</strong></li>
+        <li>Gem. dagen tussen concerten: <strong>${extra.avgDaysBetween}</strong></li>
+      </ul>
+    </div>`;
 
   container.innerHTML = `
     <h2 style="margin-top:0; margin-bottom:15px; font-size:18px;">📊 Statistieken</h2>
+
     <div style="display:flex; gap:30px; flex-wrap:wrap;">
       ${colArtists}
       ${colLoc}
-      ${colDays}
+      ${colDaysAndYears}
     </div>
+
+    ${colExtra}
   `;
 
   return container;
 }
 
-
-
 // =========================================================
 // CONCERTKAARTEN
 // =========================================================
-
 function createConcertCard(concert, isPast) {
   const card = document.createElement("div");
   card.classList.add("concert-card");
@@ -212,20 +287,15 @@ function createConcertCard(concert, isPast) {
   return card;
 }
 
-
-
 function formatDate(datetime) {
   const date = new Date(datetime);
   const options = { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" };
   return date.toLocaleDateString("nl-NL", options).replace(" om", " –");
 }
 
-
-
 // =========================================================
-// COUNTDOWNS UPDATE
+// COUNTDOWNS
 // =========================================================
-
 function updateCountdowns() {
   const now = new Date();
 
@@ -241,20 +311,17 @@ function updateCountdowns() {
 
     const diffMs = target - now;
 
-    // 🎵 Toekomstige concerten (blijven zoals ze waren)
     if (diffMs > 0) {
-      const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
-      const minutes = Math.floor((diffMs / (1000 * 60)) % 60);
+      const days = Math.floor(diffMs / 86400000);
+      const hours = Math.floor((diffMs / 3600000) % 24);
+      const minutes = Math.floor((diffMs / 60000) % 60);
 
       countdownEl.textContent = `${days}d ${hours}u ${minutes}m`;
       countdownEl.classList.remove("finished");
       return;
     }
 
-    // 🎵 Verleden concerten — dubbele weergave
-    const daysAgo = Math.floor((now - target) / (1000 * 60 * 60 * 24));
-
+    const daysAgo = Math.floor((now - target) / 86400000);
     const diff = diffYMDDays(target, now);
     const ymd = `${diff.years} jaar, ${diff.months} maanden en ${diff.days} dagen geleden`;
 
@@ -268,8 +335,6 @@ function updateCountdowns() {
   });
 }
 
-
-
 function isSameDay(d1, d2) {
   return (
     d1.getFullYear() === d2.getFullYear() &&
@@ -278,12 +343,9 @@ function isSameDay(d1, d2) {
   );
 }
 
-
-
 // =========================================================
 // RENDER ALLES
 // =========================================================
-
 function renderConcerts() {
   const now = new Date();
   const upcomingList = document.getElementById("upcoming-list");
@@ -300,21 +362,15 @@ function renderConcerts() {
   const archiveToggle = document.querySelector(".archive-toggle");
   archiveToggle.innerHTML = `<span class="arrow">▼</span> Archief (${past.length})`;
 
-  past.forEach(c =>
-    archiveList.appendChild(createConcertCard(c, true))
-  );
+  past.forEach(c => archiveList.appendChild(createConcertCard(c, true)));
 
   archiveList.appendChild(renderStatsBlock(past));
 
-  upcoming.forEach(c =>
-    upcomingList.appendChild(createConcertCard(c, false))
-  );
+  upcoming.forEach(c => upcomingList.appendChild(createConcertCard(c, false)));
 
   updateCountdowns();
   setInterval(updateCountdowns, 1000);
 }
-
-
 
 document.addEventListener("DOMContentLoaded", () => {
   renderConcerts();
@@ -330,5 +386,3 @@ document.addEventListener("DOMContentLoaded", () => {
       : "rotate(0deg)";
   });
 });
-
-
