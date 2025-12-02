@@ -43,6 +43,8 @@ const concerts = [
 { artist: "Guns N' Roses", location: "Bospop terrein - Weert", datetime: "2023-07-11T19:45:00" },
 { artist: "Queens of the Stone Age", location: "Ziggo Dome - Amsterdam", datetime: "2023-11-04T20:30:00" },
 { artist: "Slash & Myles Kennedy", location: "Ziggo Dome - Amsterdam", datetime: "2024-04-09T20:30:00" },
+{ artist: "The Tribute: Battle of the Bands", location: "Ziggo Dome - Amsterdam", datetime: "2024-04-12T20:00:00" },
+{ artist: "De Toppers", location: "Johan Cruijff Arena - Amsterdam", datetime: "2024-05-24T20:45:00" },
 { artist: "AC-DC", location: "Johan Cruijff Arena - Amsterdam", datetime: "2024-06-05T20:45:00" },
 { artist: "Judas Priest", location: "AFAS Live - Amsterdam", datetime: "2024-06-10T21:00:00" },
 { artist: "Scorpions", location: "Ziggo Dome - Amsterdam", datetime: "2024-06-11T21:00:00" },
@@ -66,13 +68,13 @@ const concerts = [
 { artist: "Alice Cooper", location: "AFAS Live - Amsterdam", datetime: "2025-07-28T20:15:00" },
 { artist: "The Offspring", location: "Ziggo Dome - Amsterdam", datetime: "2025-11-07T19:30:00" },
 { artist: "Sabaton", location: "Ziggo Dome - Amsterdam", datetime: "2025-12-01T19:00:00" },
+{ artist: "Avond van de Filmmuziek", location: "Ziggo Dome - Amsterdam", datetime: "2025-12-21T14:00:00" },
 { artist: "Metallica", location: "Deutsche Bank Park - Frankfurt", datetime: "2026-05-22T20:00:00" },
 { artist: "Metallica", location: "Deutsche Bank Park - Frankfurt", datetime: "2026-05-24T20:00:00" },
 { artist: "Iron Maiden", location: "Ziggo Dome - Amsterdam", datetime: "2026-06-10T20:00:00" },
 { artist: "Guns N' Roses", location: "Ziggo Dome - Amsterdam", datetime: "2026-06-18T20:00:00" },
 { artist: "Guns N' Roses", location: "Ziggo Dome - Amsterdam", datetime: "2026-06-20T20:00:00" }
 ];
-
 
 // =========================================================
 // HULPFUNCTIE: verschil in jaren, maanden, dagen
@@ -328,3 +330,4 @@ document.addEventListener("DOMContentLoaded", () => {
       : "rotate(0deg)";
   });
 });
+
