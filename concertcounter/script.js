@@ -4,13 +4,14 @@ async function loadConcerts() {
   try {
     const response = await fetch("concertcounter/concerts.json");
     concerts = await response.json();
-    renderConcerts();
+    renderConcerts(); // PAS HIER wordt de tool gestart
   } catch (err) {
-    console.error("Cannot load Concerts JSON:", err);
+    console.error("Cannot load concerts JSON:", err);
   }
 }
 
 document.addEventListener("DOMContentLoaded", loadConcerts);
+
 
 // =========================================================
 // HULPFUNCTIES
@@ -317,4 +318,5 @@ document.addEventListener("DOMContentLoaded", () => {
       ? "rotate(180deg)"
       : "rotate(0deg)";
   });
+
 });
