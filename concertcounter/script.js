@@ -181,9 +181,9 @@ function renderStatsBlock(past) {
       <ul>
         <li>Drukste maand ooit: <strong>${extra.busiestMonth[0]}</strong> (${extra.busiestMonth[1]}×)</li>
         <li>Jaar met meeste concerten: <strong>${extra.busiestYear[0]}</strong> (${extra.busiestYear[1]}×)</li>
-        <li>Unieke artiesten: <strong>${extra.uniqueArtists}</strong></li>
-        <li>Unieke zalen: <strong>${extra.uniqueLocations}</strong></li>
-        <li>Totaal bezocht: <strong>${extra.totalConcerts}</strong></li>
+        <li>Unieke artiesten bezocht: <strong>${extra.uniqueArtists} artiesten</strong></li>
+        <li>Unieke locaties bezocht: <strong>${extra.uniqueLocations} locaties</strong></li>
+        <li>Totaal aantal concerten bezocht: <strong>${extra.totalConcerts} concerten</strong></li>
         <li>Gem. dagen tussen concerten: <strong>${extra.avgDaysBetween}</strong></li>
       </ul>
     </div>`;
@@ -334,3 +334,4 @@ function renderConcerts() {
       : "rotate(0deg)";
   });
 }
+
