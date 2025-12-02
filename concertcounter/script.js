@@ -163,7 +163,7 @@ function renderStatsBlock(past) {
 
   const colDaysAndYears = `
     <div style="min-width:200px; flex:1;">
-      <h3>📅 Per dag/maand</h3>
+      <h3>📅 Dagen/jaren</h3>
       <ul>
         ${weekdayOrder.map(i => `<li>${weekdayNames[i]}: <strong>${weekdayStats[i]}×</strong></li>`).join("")}
       </ul>
@@ -184,7 +184,7 @@ function renderStatsBlock(past) {
         <li>Unieke artiesten bezocht: <strong>${extra.uniqueArtists} artiesten</strong></li>
         <li>Unieke locaties bezocht: <strong>${extra.uniqueLocations} locaties</strong></li>
         <li>Totaal aantal concerten bezocht: <strong>${extra.totalConcerts} concerten</strong></li>
-        <li>Gem. dagen tussen concerten: <strong>${extra.avgDaysBetween}</strong></li>
+        <li>Gem. dagen tussen concerten: <strong>${extra.avgDaysBetween} dagen</strong></li>
       </ul>
     </div>`;
 
