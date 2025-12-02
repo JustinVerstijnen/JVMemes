@@ -1,10 +1,14 @@
+// =========================================================
+// LOAD JSON
+// =========================================================
+
 let concerts = [];
 
 async function loadConcerts() {
   try {
     const response = await fetch("concertcounter/concerts.json");
     concerts = await response.json();
-    renderConcerts(); // PAS HIER wordt de tool gestart
+    renderConcerts(); // Start pas als JSON geladen is
   } catch (err) {
     console.error("Cannot load concerts JSON:", err);
   }
@@ -12,10 +16,10 @@ async function loadConcerts() {
 
 document.addEventListener("DOMContentLoaded", loadConcerts);
 
-
 // =========================================================
 // HULPFUNCTIES
 // =========================================================
+
 function diffYMDDays(target, now) {
   let years = now.getFullYear() - target.getFullYear();
   let months = now.getMonth() - target.getMonth();
@@ -38,6 +42,7 @@ function diffYMDDays(target, now) {
 // =========================================================
 // STATISTIEKEN
 // =========================================================
+
 function generateStats(past) {
   const artistStats = {};
   const locationStats = {};
@@ -64,6 +69,7 @@ function generateStats(past) {
 // =========================================================
 // NIEUWE STATISTIEKEN
 // =========================================================
+
 function generateYearStats(past) {
   const stats = {};
   const firstYear = 2017;
@@ -80,7 +86,16 @@ function generateYearStats(past) {
 }
 
 function generateExtraStats(past) {
-  if (past.length === 0) return {};
+  if (past.length === 0) {
+    return {
+      busiestMonth: ["n.v.t.", 0],
+      busiestYear: ["n.v.t.", 0],
+      totalConcerts: 0,
+      uniqueArtists: 0,
+      uniqueLocations: 0,
+      avgDaysBetween: 0
+    };
+  }
 
   const monthCounts = {};
   const yearCounts = {};
@@ -121,9 +136,9 @@ function generateExtraStats(past) {
 // =========================================================
 // RENDER STATISTIEKEN
 // =========================================================
+
 function renderStatsBlock(past) {
-  const { sortedArtists, sortedLocations, weekdayStats, weekdayNames, weekdayOrder } =
-    generateStats(past);
+  const { sortedArtists, sortedLocations, weekdayStats, weekdayNames, weekdayOrder } = generateStats(past);
 
   const yearStats = generateYearStats(past);
   const extra = generateExtraStats(past);
@@ -134,36 +149,29 @@ function renderStatsBlock(past) {
   container.style.background = "#eef2f7";
   container.style.borderRadius = "12px";
 
-  // Artiesten
   const colArtists = `
     <div style="min-width:200px; flex:1;">
       <h3>🎤 Artiesten</h3>
       <ul>${sortedArtists.map(([n,v]) => `<li>${n}: <strong>${v}×</strong></li>`).join("")}</ul>
     </div>`;
 
-  // Locaties
   const colLoc = `
     <div style="min-width:200px; flex:1;">
       <h3>📍 Locaties</h3>
       <ul>${sortedLocations.map(([l,v]) => `<li>${l}: <strong>${v}×</strong></li>`).join("")}</ul>
     </div>`;
 
-  // Per dag/maand + Jaren hieronder (zelfde kolom!)
   const colDaysAndYears = `
     <div style="min-width:200px; flex:1;">
       <h3>📅 Per dag/maand</h3>
       <ul>
-        ${weekdayOrder
-          .map(i => `<li>${weekdayNames[i]}: <strong>${weekdayStats[i]}×</strong></li>`)
-          .join("")}
+        ${weekdayOrder.map(i => `<li>${weekdayNames[i]}: <strong>${weekdayStats[i]}×</strong></li>`).join("")}
       </ul>
 
-      <div style="height:12px;"></div> <!-- witregel -->
+      <div style="height:12px;"></div>
 
       <ul>
-        ${Object.entries(yearStats)
-          .map(([year, count]) => `<li>${year}: <strong>${count}×</strong></li>`)
-          .join("")}
+        ${Object.entries(yearStats).map(([y,c]) => `<li>${y}: <strong>${c}×</strong></li>`).join("")}
       </ul>
     </div>`;
 
@@ -198,6 +206,7 @@ function renderStatsBlock(past) {
 // =========================================================
 // CONCERTKAARTEN
 // =========================================================
+
 function createConcertCard(concert, isPast) {
   const card = document.createElement("div");
   card.classList.add("concert-card");
@@ -222,13 +231,21 @@ function createConcertCard(concert, isPast) {
 
 function formatDate(datetime) {
   const date = new Date(datetime);
-  const options = { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" };
+  const options = {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  };
   return date.toLocaleDateString("nl-NL", options).replace(" om", " –");
 }
 
 // =========================================================
 // COUNTDOWNS
 // =========================================================
+
 function updateCountdowns() {
   const now = new Date();
 
@@ -279,6 +296,7 @@ function isSameDay(d1, d2) {
 // =========================================================
 // RENDER ALLES
 // =========================================================
+
 function renderConcerts() {
   const now = new Date();
   const upcomingList = document.getElementById("upcoming-list");
@@ -303,11 +321,8 @@ function renderConcerts() {
 
   updateCountdowns();
   setInterval(updateCountdowns, 1000);
-}
 
-document.addEventListener("DOMContentLoaded", () => {
-  renderConcerts();
-
+  // Toggle (staat nu op de juiste plek!)
   const toggle = document.querySelector(".archive-toggle");
   const arrow = document.querySelector(".arrow");
   const archive = document.getElementById("archive-list");
@@ -318,5 +333,4 @@ document.addEventListener("DOMContentLoaded", () => {
       ? "rotate(180deg)"
       : "rotate(0deg)";
   });
-
-});
+}
