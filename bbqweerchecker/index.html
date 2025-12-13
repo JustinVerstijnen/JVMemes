@@ -410,7 +410,7 @@
         els.wind.textContent = bft;
 
         // Condities
-        const tempState = (chosen.temp >= 10 && chosen.temp <= 30) ? "good" : "bad";
+        const tempState = (chosen.temp >= 2 && chosen.temp <= 30) ? "good" : "bad";
         const rainState = (chosen.rain <= 0.001) ? "good" : "bad";
         const windState =
           bft <= 3 ? "good" :
