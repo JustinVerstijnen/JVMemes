@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Nyan Cat - justinverstijnen.nl</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: black;
+      cursor: pointer;
+    }
+    .fullscreen-gif {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover; 
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body onclick="startSound()">
+  <img src="nyancat.gif" alt="RickRoll" class="fullscreen-gif">
+
+  <audio id="beerAudio" loop>
+    <source src="nyancat.mp3" type="audio/mpeg">
+    Your browser does not support audio. Sadly, no Nyan Cat for you.
+  </audio>
+
+  <script>
+    function startSound() {
+      const audio = document.getElementById('beerAudio');
+      audio.play();
+      document.body.onclick = null;
+    }
+  </script>
+</body>
+</html>
