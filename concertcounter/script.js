@@ -6,7 +6,7 @@ let concerts = [];
 
 async function loadConcerts() {
   try {
-    const response = await fetch("concertcounter/concerts.json");
+    const response = await fetch("concerts.json");
     concerts = await response.json();
     renderConcerts(); // Start pas als JSON geladen is
   } catch (err) {
@@ -334,4 +334,5 @@ function renderConcerts() {
       : "rotate(0deg)";
   });
 }
+
 
