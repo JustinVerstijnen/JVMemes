@@ -1,7 +1,7 @@
 let matches = [];
 
 async function loadMatches() {
-  const response = await fetch("a3schema/matches.json");
+  const response = await fetch("matches.json");
   const text = await response.text();
   matches = text
     .trim()
