@@ -1,1 +1,201 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countdown Sem</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+            flex-direction: column;
+            overflow: hidden; /* voorkomt scrollbalken bij animatie */
+        }
+
+        .counter-container {
+            text-align: center;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+
+        .countdown {
+            font-size: 2rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .countdown span {
+            margin: 0 10px;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        #countdown {
+            display: flex;
+            justify-content: center;
+        }
+
+        .image-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .image-container img {
+            max-width: 200px;
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        /* Vlieg-animatie */
+        .flying {
+            position: absolute;
+            left: -250px; /* start buiten beeld links */
+            max-width: 150px;
+            width: 120px;
+            height: auto;
+            animation: flyAcross 8s linear forwards;
+            z-index: 5;
+        }
+
+        @keyframes flyAcross {
+            0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+            50%  { transform: translate(50vw, -40px) rotate(20deg); opacity: 0.9; }
+            100% { transform: translate(120vw, 0) rotate(-20deg); opacity: 0; }
+        }
+
+        @media (max-width: 600px) {
+            .countdown {
+                font-size: 1.5rem;
+            }
+            h1 {
+                font-size: 1.4rem;
+            }
+            .image-container img {
+                max-width: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="counter-container">
+        <h1 id="pageTitle"></h1>
+        <div id="countdown" class="countdown">
+            <span id="days"></span>:
+            <span id="hours"></span>:
+            <span id="minutes"></span>:
+            <span id="seconds"></span>
+        </div>
+
+        <!-- Afbeelding onder de counter -->
+        <div class="image-container">
+            <img id="countdownImage" src="" alt="Countdown Image">
+        </div>
+    </div>
+
+    <!-- Container voor vliegende afbeeldingen -->
+    <div id="flyingContainer"></div>
+
+    <script>
+        /** 
+         * ==============================
+         * VARIABLES OM AAN TE PASSEN
+         * ==============================
+         */
+        const settings = {
+            title: "Countdown Sem", 
+            targetDate: "June 2, 2050 12:00:00", // einddatum + tijd
+            imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Microsoft_logo.svg/1200px-Microsoft_logo.svg.png", 
+            endMessage: "Message if counter is done counting"
+        };
+
+        // Zet de titel en afbeelding
+        document.getElementById("pageTitle").textContent = settings.title;
+        document.getElementById("countdownImage").src = settings.imageUrl;
+
+        // Bereken eindtijd
+        const targetTime = new Date(settings.targetDate).getTime();
+
+        // Update de teller elke seconde
+        let countdownFunction = setInterval(function () {
+            let now = new Date().getTime();
+            let distance = targetTime - now;
+
+            let days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("days").innerHTML = days;
+            document.getElementById("hours").innerHTML = hours;
+            document.getElementById("minutes").innerHTML = minutes;
+            document.getElementById("seconds").innerHTML = seconds;
+
+            // Als de datum is bereikt
+            if (distance < 0) {
+                clearInterval(countdownFunction);
+                document.getElementById("countdown").innerHTML = settings.endMessage;
+            }
+        }, 1000);
+
+        /** 
+         * ==============================
+         * VLIEGENDE AFBEELDING FUNCTIE
+         * ==============================
+         */
+        function launchFlyingImage() {
+            const flyingContainer = document.getElementById("flyingContainer");
+            const img = document.createElement("img");
+            img.src = settings.imageUrl;
+            img.classList.add("flying");
+
+            // Willekeurige hoogte (20% - 80% vh)
+            let randomTop = Math.floor(Math.random() * 60) + 20;
+            img.style.top = randomTop + "vh";
+
+            flyingContainer.appendChild(img);
+
+            // Verwijder na animatie
+            setTimeout(() => {
+                flyingContainer.removeChild(img);
+            }, 8000);
+        }
+
+        // Elke 15 seconden kans op vliegen (nu 75%)
+setInterval(() => {
+    if (Math.random() > 0.25) {
+        launchFlyingImage();
+    }
+}, 15000);
+    </script>
+</body>
+</html>
