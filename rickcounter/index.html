@@ -1,1 +1,735 @@
-placeholder
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rick Counter</title>
+    <style>
+        :root {
+            --bg-1: #0b1020;
+            --bg-2: #111827;
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --card-border: rgba(255, 255, 255, 0.12);
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --accent: #38bdf8;
+            --accent-2: #818cf8;
+            --flip-top: #1f2937;
+            --flip-bottom: #111827;
+            --flip-border: rgba(255, 255, 255, 0.08);
+            --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+            --radius: 24px;
+            --digit-color: #ffffff;
+            --error-bg: rgba(239, 68, 68, 0.12);
+            --error-border: rgba(239, 68, 68, 0.28);
+            --error-text: #fecaca;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            min-height: 100%;
+        }
+
+        body {
+            font-family: Inter, Arial, sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top left, rgba(56, 189, 248, 0.14), transparent 30%),
+                radial-gradient(circle at top right, rgba(129, 140, 248, 0.12), transparent 30%),
+                linear-gradient(135deg, var(--bg-1), var(--bg-2));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 32px 16px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .background-glow {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .background-glow::before,
+        .background-glow::after {
+            content: "";
+            position: absolute;
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.18;
+        }
+
+        .background-glow::before {
+            top: 6%;
+            left: 5%;
+            background: #38bdf8;
+        }
+
+        .background-glow::after {
+            bottom: 8%;
+            right: 6%;
+            background: #818cf8;
+        }
+
+        .page {
+            width: 100%;
+            max-width: 1220px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: clamp(2rem, 4vw, 3.2rem);
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--muted);
+            font-size: 1rem;
+        }
+
+        .counters-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 24px;
+        }
+
+        .counter-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .counter-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                180deg,
+                rgba(255, 255, 255, 0.05),
+                rgba(255, 255, 255, 0.01)
+            );
+            pointer-events: none;
+        }
+
+        .counter-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .counter-info h2 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .target-date {
+            color: var(--muted);
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .counter-image {
+            width: 84px;
+            height: 84px;
+            border-radius: 18px;
+            overflow: hidden;
+            flex-shrink: 0;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.04);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+        }
+
+        .counter-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .countdown {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(70px, 1fr));
+            gap: 14px;
+            align-items: start;
+        }
+
+        .time-unit {
+            text-align: center;
+        }
+
+        .flip-card {
+            position: relative;
+            height: 104px;
+            perspective: 1000px;
+        }
+
+        .flip-static,
+        .flip-top,
+        .flip-bottom,
+        .flip-top-flip,
+        .flip-bottom-flip {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            border: 1px solid var(--flip-border);
+            background: linear-gradient(180deg, var(--flip-top), var(--flip-bottom));
+            color: var(--digit-color);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.04),
+                0 10px 25px rgba(0, 0, 0, 0.28);
+        }
+
+        .flip-static {
+            inset: 0;
+            border-radius: 16px;
+            background: linear-gradient(180deg, #1e293b, #0f172a);
+        }
+
+        .flip-static::before {
+            content: "";
+            position: absolute;
+            left: 10px;
+            right: 10px;
+            top: 50%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.14);
+            z-index: 5;
+        }
+
+        .flip-static::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                180deg,
+                rgba(255,255,255,0.06),
+                rgba(255,255,255,0.01) 40%,
+                rgba(0,0,0,0.08)
+            );
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .flip-top,
+        .flip-top-flip {
+            top: 0;
+            height: 50%;
+            border-radius: 16px 16px 0 0;
+            transform-origin: bottom;
+            border-bottom: none;
+        }
+
+        .flip-bottom,
+        .flip-bottom-flip {
+            bottom: 0;
+            height: 50%;
+            border-radius: 0 0 16px 16px;
+            transform-origin: top;
+            border-top: none;
+        }
+
+        .flip-top .value,
+        .flip-top-flip .value,
+        .flip-bottom .value,
+        .flip-bottom-flip .value {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 104px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: clamp(2rem, 4vw, 3.2rem);
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.35);
+        }
+
+        .flip-top .value,
+        .flip-top-flip .value {
+            top: 0;
+        }
+
+        .flip-bottom .value,
+        .flip-bottom-flip .value {
+            bottom: 0;
+        }
+
+        .flip-top-flip {
+            z-index: 30;
+            backface-visibility: hidden;
+            transform: rotateX(0deg);
+        }
+
+        .flip-bottom-flip {
+            z-index: 20;
+            backface-visibility: hidden;
+            transform: rotateX(90deg);
+        }
+
+        .flip-card.play .flip-top-flip {
+            animation: flipTop 0.35s ease-in forwards;
+        }
+
+        .flip-card.play .flip-bottom-flip {
+            animation: flipBottom 0.35s ease-out 0.35s forwards;
+        }
+
+        @keyframes flipTop {
+            0% {
+                transform: rotateX(0deg);
+            }
+            100% {
+                transform: rotateX(-90deg);
+            }
+        }
+
+        @keyframes flipBottom {
+            0% {
+                transform: rotateX(90deg);
+            }
+            100% {
+                transform: rotateX(0deg);
+            }
+        }
+
+        .tile-label {
+            margin-top: 10px;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--muted);
+        }
+
+        .end-message {
+            margin-top: 18px;
+            padding: 16px 18px;
+            border-radius: 16px;
+            text-align: center;
+            font-weight: 700;
+            background: rgba(56, 189, 248, 0.12);
+            border: 1px solid rgba(56, 189, 248, 0.22);
+            color: #e0f2fe;
+            display: none;
+        }
+
+        .end-message.show {
+            display: block;
+            animation: fadeInUp 0.4s ease;
+        }
+
+        .date-not-found {
+            margin-top: 8px;
+            padding: 30px 18px;
+            border-radius: 20px;
+            text-align: center;
+            background: var(--error-bg);
+            border: 1px solid var(--error-border);
+            color: var(--error-text);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+        }
+
+        .date-not-found .code {
+            font-size: clamp(3rem, 8vw, 5rem);
+            line-height: 1;
+            font-weight: 900;
+            letter-spacing: 0.04em;
+            margin-bottom: 10px;
+        }
+
+        .date-not-found .message {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .date-not-found .submessage {
+            font-size: 0.95rem;
+            color: #fca5a5;
+        }
+
+        .flying {
+            position: fixed;
+            left: -250px;
+            max-width: 150px;
+            width: 120px;
+            height: auto;
+            animation: flyAcross 8s linear forwards;
+            z-index: 1;
+            pointer-events: none;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.25));
+        }
+
+        @keyframes flyAcross {
+            0% {
+                transform: translateY(0) rotate(0deg) scale(0.95);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            50% {
+                transform: translate(50vw, -40px) rotate(12deg) scale(1);
+                opacity: 0.95;
+            }
+            100% {
+                transform: translate(120vw, 0) rotate(-12deg) scale(0.95);
+                opacity: 0;
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 920px) {
+            .counters-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 20px 12px;
+            }
+
+            .counter-card {
+                padding: 18px;
+                border-radius: 20px;
+            }
+
+            .counter-top {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .counter-image {
+                width: 96px;
+                height: 96px;
+            }
+
+            .countdown {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 12px;
+            }
+
+            .flip-card {
+                height: 88px;
+            }
+
+            .flip-top .value,
+            .flip-top-flip .value,
+            .flip-bottom .value,
+            .flip-bottom-flip .value {
+                height: 88px;
+                font-size: 2.3rem;
+            }
+
+            .date-not-found .code {
+                font-size: 3.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-glow"></div>
+
+    <main class="page">
+        <header class="header">
+            <h1>Rick Counter</h1>
+            <p>404 datum niet gevonden</p>
+        </header>
+
+        <section class="counters-grid" id="countersGrid"></section>
+    </main>
+
+    <div id="flyingContainer"></div>
+
+    <script>
+        const settings = {
+            flyingImageInterval: 15000,
+            flyingImageChance: 0.75,
+            countdowns: [
+                {
+                    title: "Tijd tot inleveren",
+                    targetDate: "",
+                    imageUrl: "https://memes.justinverstijnen.nl/rickcounter/rickcounter.png",
+                    endMessage: "Datum gevonden!"
+                },
+                {
+                    title: "Tijd tot slagen",
+                    targetDate: "",
+                    imageUrl: "https://memes.justinverstijnen.nl/rickcounter/rickcounter.png",
+                    endMessage: "Datum gevonden!"
+                }
+            ]
+        };
+
+        const countersGrid = document.getElementById("countersGrid");
+
+        function pad(value) {
+            return String(value).padStart(2, "0");
+        }
+
+        function formatDate(dateString) {
+            if (!dateString || !dateString.trim()) {
+                return "404 datum niet gevonden";
+            }
+
+            const date = new Date(dateString);
+
+            if (isNaN(date.getTime())) {
+                return "404 datum niet gevonden";
+            }
+
+            return new Intl.DateTimeFormat("nl-NL", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+            }).format(date);
+        }
+
+        function createFlipUnit(id, label, initialValue = "00") {
+            return `
+                <div class="time-unit">
+                    <div class="flip-card" id="${id}">
+                        <div class="flip-static"></div>
+
+                        <div class="flip-top">
+                            <div class="value top-value">${initialValue}</div>
+                        </div>
+
+                        <div class="flip-bottom">
+                            <div class="value bottom-value">${initialValue}</div>
+                        </div>
+
+                        <div class="flip-top-flip">
+                            <div class="value top-flip-value">${initialValue}</div>
+                        </div>
+
+                        <div class="flip-bottom-flip">
+                            <div class="value bottom-flip-value">${initialValue}</div>
+                        </div>
+                    </div>
+                    <div class="tile-label">${label}</div>
+                </div>
+            `;
+        }
+
+        function createDateNotFound() {
+            return `
+                <div class="date-not-found">
+                    <div class="code">404</div>
+                    <div class="message">404 datum niet gevonden</div>
+                    <div class="submessage">404 datum niet gevonden</div>
+                </div>
+            `;
+        }
+
+        function isValidDate(dateString) {
+            if (!dateString || !dateString.trim()) {
+                return false;
+            }
+
+            const date = new Date(dateString);
+            return !isNaN(date.getTime());
+        }
+
+        function createCounterCard(counter, index) {
+            const hasValidDate = isValidDate(counter.targetDate);
+            const card = document.createElement("article");
+            card.className = "counter-card";
+            card.innerHTML = `
+                <div class="counter-top">
+                    <div class="counter-info">
+                        <h2>${counter.title}</h2>
+                        <div class="target-date">Doeldatum: ${formatDate(counter.targetDate)}</div>
+                    </div>
+                    <div class="counter-image">
+                        <img src="${counter.imageUrl}" alt="${counter.title}">
+                    </div>
+                </div>
+
+                ${hasValidDate ? `
+                    <div class="countdown" id="countdown-${index}">
+                        ${createFlipUnit(`days-${index}`, "Dagen", "00")}
+                        ${createFlipUnit(`hours-${index}`, "Uren", "00")}
+                        ${createFlipUnit(`minutes-${index}`, "Minuten", "00")}
+                        ${createFlipUnit(`seconds-${index}`, "Seconden", "00")}
+                    </div>
+
+                    <div class="end-message" id="end-${index}">
+                        ${counter.endMessage}
+                    </div>
+                ` : createDateNotFound()}
+            `;
+            return card;
+        }
+
+        function renderCounters() {
+            settings.countdowns.forEach((counter, index) => {
+                countersGrid.appendChild(createCounterCard(counter, index));
+            });
+        }
+
+        function setFlipValue(id, newValue, skipAnimation = false) {
+            const flipCard = document.getElementById(id);
+            if (!flipCard) return;
+
+            const topValue = flipCard.querySelector(".top-value");
+            const bottomValue = flipCard.querySelector(".bottom-value");
+            const topFlipValue = flipCard.querySelector(".top-flip-value");
+            const bottomFlipValue = flipCard.querySelector(".bottom-flip-value");
+
+            const currentValue = topValue.textContent;
+
+            if (currentValue === newValue) return;
+
+            if (skipAnimation) {
+                topValue.textContent = newValue;
+                bottomValue.textContent = newValue;
+                topFlipValue.textContent = newValue;
+                bottomFlipValue.textContent = newValue;
+                return;
+            }
+
+            topFlipValue.textContent = currentValue;
+            bottomFlipValue.textContent = newValue;
+
+            flipCard.classList.remove("play");
+            void flipCard.offsetWidth;
+
+            flipCard.classList.add("play");
+
+            setTimeout(() => {
+                topValue.textContent = newValue;
+            }, 350);
+
+            setTimeout(() => {
+                bottomValue.textContent = newValue;
+                topFlipValue.textContent = newValue;
+                bottomFlipValue.textContent = newValue;
+                flipCard.classList.remove("play");
+            }, 700);
+        }
+
+        function startCountdown(counter, index) {
+            if (!isValidDate(counter.targetDate)) {
+                return;
+            }
+
+            const targetTime = new Date(counter.targetDate).getTime();
+            const countdownEl = document.getElementById(`countdown-${index}`);
+            const endEl = document.getElementById(`end-${index}`);
+
+            if (!countdownEl || !endEl) {
+                return;
+            }
+
+            let finished = false;
+
+            function update(skipAnimation = false) {
+                const now = new Date().getTime();
+                const distance = targetTime - now;
+
+                if (distance <= 0) {
+                    setFlipValue(`days-${index}`, "00", skipAnimation);
+                    setFlipValue(`hours-${index}`, "00", skipAnimation);
+                    setFlipValue(`minutes-${index}`, "00", skipAnimation);
+                    setFlipValue(`seconds-${index}`, "00", skipAnimation);
+
+                    if (!finished) {
+                        endEl.classList.add("show");
+                        finished = true;
+                    }
+                    return;
+                }
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                setFlipValue(`days-${index}`, String(days), skipAnimation);
+                setFlipValue(`hours-${index}`, pad(hours), skipAnimation);
+                setFlipValue(`minutes-${index}`, pad(minutes), skipAnimation);
+                setFlipValue(`seconds-${index}`, pad(seconds), skipAnimation);
+            }
+
+            update(true);
+            setInterval(() => update(false), 1000);
+        }
+
+        function launchFlyingImage() {
+            const flyingContainer = document.getElementById("flyingContainer");
+            const availableImages = settings.countdowns
+                .map(counter => counter.imageUrl)
+                .filter(Boolean);
+
+            if (availableImages.length === 0) return;
+
+            const img = document.createElement("img");
+            img.src = availableImages[Math.floor(Math.random() * availableImages.length)];
+            img.className = "flying";
+
+            const randomTop = Math.floor(Math.random() * 60) + 15;
+            img.style.top = randomTop + "vh";
+
+            flyingContainer.appendChild(img);
+
+            setTimeout(() => {
+                if (img.parentNode) {
+                    img.parentNode.removeChild(img);
+                }
+            }, 8000);
+        }
+
+        renderCounters();
+        settings.countdowns.forEach((counter, index) => startCountdown(counter, index));
+
+        setInterval(() => {
+            if (Math.random() < settings.flyingImageChance) {
+                launchFlyingImage();
+            }
+        }, settings.flyingImageInterval);
+    </script>
+</body>
+</html>
