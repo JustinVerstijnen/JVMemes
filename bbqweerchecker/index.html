@@ -245,12 +245,40 @@
       0%{ opacity:1; transform:translateY(0)}
       100%{ opacity:0.4; transform:translateY(-10px)}
     }
+    .location-panel{
+      margin-top:16px;
+      padding:12px 14px;
+      border-radius:14px;
+      background:#f3f4f6;
+      color:var(--muted);
+      font-size:14px;
+    }
+    .location-panel button{
+      margin-top:10px;
+      border:0;
+      border-radius:999px;
+      padding:10px 16px;
+      background:#111827;
+      color:white;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .location-panel button:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+
   </style>
 </head>
 <body>
   <main class="app">
     <h1>Is het BBQ-weer? 🔥</h1>
     <div id="verdict" class="verdict"></div>
+
+    <section class="location-panel" aria-live="polite">
+      <div id="locationStatus">Locatie wordt automatisch gevraagd. Als dit niet lukt, gebruiken we Zwolle als fallback.</div>
+      <button id="locationBtn" type="button">Probeer GPS opnieuw</button>
+    </section>
 
     <section id="animWrap"></section>
 
@@ -316,6 +344,8 @@
       rain: document.getElementById('rain'),
       wind: document.getElementById('wind'),
       timeInfo: document.getElementById('timeInfo'),
+      locationStatus: document.getElementById('locationStatus'),
+      locationBtn: document.getElementById('locationBtn'),
       tempBox: document.getElementById('tempBox'),
       rainBox: document.getElementById('rainBox'),
       windBox: document.getElementById('windBox'),
@@ -370,9 +400,62 @@
       }
     }
 
-    async function run(){
+    const FALLBACK_LOCATION = {
+      name: "Zwolle",
+      latitude: 52.5168,
+      longitude: 6.0830
+    };
+
+    function setLoading(isLoading){
+      els.locationBtn.disabled = isLoading;
+      els.locationBtn.textContent = isLoading ? "Locatie ophalen..." : "Probeer GPS opnieuw";
+    }
+
+    function resetMetrics(){
+      els.temp.textContent = "—";
+      els.rain.textContent = "—";
+      els.wind.textContent = "—";
+      els.timeInfo.textContent = "—";
+      els.tempBox.style.background = "";
+      els.rainBox.style.background = "";
+      els.windBox.style.background = "";
+      els.animWrap.innerHTML = "";
+    }
+
+    function getCurrentPosition(){
+      return new Promise((resolve, reject) => {
+        if(!('geolocation' in navigator)){
+          reject(new Error('Geolocatie wordt niet ondersteund door deze browser.'));
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 15 * 60 * 1000
+        });
+      });
+    }
+
+    function getLocationErrorMessage(e){
+      if(e && e.code === 1){
+        return "GPS geweigerd. We gebruiken nu Zwolle als fallback.";
+      }
+      if(e && e.code === 2){
+        return "GPS-locatie is niet beschikbaar. We gebruiken nu Zwolle als fallback.";
+      }
+      if(e && e.code === 3){
+        return "GPS ophalen duurde te lang. We gebruiken nu Zwolle als fallback.";
+      }
+      if(e && e.message){
+        return `${e.message} We gebruiken nu Zwolle als fallback.`;
+      }
+      return "GPS-locatie kon niet worden opgehaald. We gebruiken nu Zwolle als fallback.";
+    }
+
+    async function runWithLocation(lat, lon, locationLabel){
       try{
-        const data = await getWeather(52.5168, 6.0830); // Zwolle
+        const data = await getWeather(lat, lon);
         const now = new Date();
         const end = new Date(now.getTime()+3*3600*1000);
 
@@ -421,30 +504,30 @@
         setBoxColor(els.windBox, windState);
 
         els.timeInfo.textContent =
-          `Berekend op basis van voorspelling rond: ${chosen.time.toLocaleTimeString('nl-NL',{timeStyle:'short'})} uur.`;
+          `Locatie: ${locationLabel}. Berekend op basis van voorspelling rond: ${chosen.time.toLocaleTimeString('nl-NL',{timeStyle:'short'})} uur.`;
 
         // Eindoordeel + animatie
         let mode = "wait";
 
-if (bft >= 5) {
-  mode = "wait";
-  els.verdict.textContent = "Ik vlees...eehh vrees dat je wegwaait!";
-  els.verdict.className = "verdict bad";
-} else if (chosen.temp > 32) {
-  mode = "burn";
-  els.verdict.textContent = "Veel te warm! ☀️🔥";
-  els.verdict.className = "verdict bad";
-} else if (tempState === "good" && rainState === "good" && windState !== "bad") {
-  mode = "ok";
-  els.verdict.textContent = "Ja, steek aan dat ding Pieter!";
-  els.verdict.className = "verdict ok";
-} else {
-  mode = "wait";
-  els.verdict.textContent = "Nee, dat wordt thuisbezorgd!";
-  els.verdict.className = "verdict bad";
-}
+        if (bft >= 5) {
+          mode = "wait";
+          els.verdict.textContent = "Ik vlees...eehh vrees dat je wegwaait!";
+          els.verdict.className = "verdict bad";
+        } else if (chosen.temp > 32) {
+          mode = "burn";
+          els.verdict.textContent = "Veel te warm! ☀️🔥";
+          els.verdict.className = "verdict bad";
+        } else if (tempState === "good" && rainState === "good" && windState !== "bad") {
+          mode = "ok";
+          els.verdict.textContent = "Ja, steek aan dat ding Pieter!";
+          els.verdict.className = "verdict ok";
+        } else {
+          mode = "wait";
+          els.verdict.textContent = "Nee, dat wordt thuisbezorgd!";
+          els.verdict.className = "verdict bad";
+        }
 
-renderAnim(mode);
+        renderAnim(mode);
       }catch(e){
         console.error(e);
         els.verdict.textContent = "Fout bij ophalen gegevens";
@@ -453,7 +536,38 @@ renderAnim(mode);
       }
     }
 
-    run();
+    async function runFallbackLocation(reason){
+      els.locationStatus.textContent = reason;
+      await runWithLocation(
+        FALLBACK_LOCATION.latitude,
+        FALLBACK_LOCATION.longitude,
+        `${FALLBACK_LOCATION.name} fallback`
+      );
+    }
+
+    async function requestLocationAndRun(){
+      resetMetrics();
+      setLoading(true);
+      els.verdict.textContent = "Locatie ophalen...";
+      els.verdict.className = "verdict";
+      els.locationStatus.textContent = "Vraag om GPS-toestemming wordt geopend...";
+
+      try{
+        const position = await getCurrentPosition();
+        const { latitude, longitude, accuracy } = position.coords;
+        els.locationStatus.textContent =
+          `GPS-locatie gevonden. Nauwkeurigheid: ongeveer ${Math.round(accuracy)} meter.`;
+        await runWithLocation(latitude, longitude, "je GPS-locatie");
+      }catch(e){
+        console.error(e);
+        await runFallbackLocation(getLocationErrorMessage(e));
+      }finally{
+        setLoading(false);
+      }
+    }
+
+    els.locationBtn.addEventListener('click', requestLocationAndRun);
+    requestLocationAndRun();
   </script>
 </body>
 </html>
