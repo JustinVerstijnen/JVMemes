@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script defer src="https://cloud.umami.is/script.js" data-website-id="0b9a2780-4e9b-4e14-93d9-97d0e64d6ccb"></script>
+    <!--SNEL AANPASSEN VOOR EEN NIEUW STOM IDEE-->
+    <script>
+        const CONFIG = {
+            pageTitle: "Countdown Frankrijk",
+            eyebrowText: "Nog even wachten op...",
+            mainTitle: "Vakantie Frankrijk",
+            subtitle: "We gaan weer een nieuw stom avontuur aan midden in het land van het stokbrood. Merde.",
+
+            // Gebruik bij voorkeur ISO-formaat: YYYY-MM-DDTHH:mm:ss
+            // Voorbeeld: "2026-07-26T00:00:00"
+            targetDate: "2026-07-26T05:00:00",
+
+            // Bericht als de teller klaar is
+            endTitle: "Het is zover!",
+            endMessage: "De counter is klaar met tellen. Fijne vakantie!",
+
+            // Afbeelding in de kaart en vliegend door beeld
+            imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Flag_of_France.svg/330px-Flag_of_France.svg.png",
+            imageAlt: "Countdown afbeelding",
+
+            // Link die opent als je op de afbeelding klikt
+            imageLink: "https://nl.wikipedia.org/wiki/Frankrijk",
+            imageLinkLabel: "",
+
+            // Vliegende afbeelding instellingen
+            flyingImageEnabled: true,
+            flyingImageEverySeconds: 12,
+            flyingImageChance: 0.55, // 0.55 = 55% kans per interval
+            flyingImageDurationSeconds: 8,
+            flyingImageMaxOnScreen: 3
+        };
+    </script>
+
+    <title>Countdown Template</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #f7f7fb;
+            --bg-soft: #ffffff;
+            --text: #182033;
+            --muted: #697386;
+            --line: rgba(24, 32, 51, 0.12);
+            --shadow: 0 24px 70px rgba(32, 46, 73, 0.14);
+            --shadow-soft: 0 14px 35px rgba(32, 46, 73, 0.10);
+            --accent: #3b82f6;
+            --accent-soft: #e8f1ff;
+            --card-top: #f8fafc;
+            --card-bottom: #e9eef7;
+            --flip-dark: #172033;
+            --flip-light: #263248;
+            --radius-xl: 34px;
+            --radius-lg: 24px;
+            --radius-md: 18px;
+        }
+
+        html {
+            min-height: 100%;
+            background: var(--bg);
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: var(--text);
+            overflow-x: hidden;
+            background:
+                radial-gradient(circle at 20% 12%, rgba(59, 130, 246, 0.16), transparent 32%),
+                radial-gradient(circle at 82% 20%, rgba(147, 197, 253, 0.22), transparent 30%),
+                linear-gradient(135deg, #ffffff 0%, #f7f7fb 48%, #eef5ff 100%);
+        }
+
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            width: 420px;
+            height: 420px;
+            border-radius: 999px;
+            pointer-events: none;
+            z-index: 0;
+            filter: blur(2px);
+        }
+
+        body::before {
+            left: -150px;
+            bottom: -170px;
+            background: rgba(59, 130, 246, 0.10);
+        }
+
+        body::after {
+            right: -160px;
+            top: 42%;
+            background: rgba(191, 219, 254, 0.35);
+        }
+
+        a {
+            color: inherit;
+        }
+
+        .page-shell {
+            position: relative;
+            z-index: 2;
+            width: min(1120px, calc(100% - 32px));
+            min-height: 100vh;
+            margin: 0 auto;
+            display: grid;
+            place-items: center;
+            padding: 42px 0;
+        }
+
+        .counter-card {
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.75);
+            border-radius: var(--radius-xl);
+            background: rgba(255, 255, 255, 0.76);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(18px);
+            overflow: hidden;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1.08fr 0.92fr;
+            gap: 28px;
+            padding: clamp(24px, 5vw, 56px);
+            align-items: center;
+        }
+
+        .content {
+            min-width: 0;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            color: #1d4ed8;
+            background: var(--accent-soft);
+            border: 1px solid rgba(59, 130, 246, 0.14);
+            font-size: 0.88rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            margin-bottom: 18px;
+        }
+
+        .eyebrow-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 999px;
+            background: var(--accent);
+            box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.13);
+        }
+
+        h1 {
+            max-width: 760px;
+            font-size: clamp(2.25rem, 7vw, 5.4rem);
+            line-height: 0.92;
+            letter-spacing: -0.075em;
+            margin-bottom: 18px;
+        }
+
+        .subtitle {
+            max-width: 650px;
+            color: var(--muted);
+            font-size: clamp(1rem, 1.8vw, 1.18rem);
+            line-height: 1.65;
+            margin-bottom: 30px;
+        }
+
+        .countdown {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(92px, 1fr));
+            gap: clamp(10px, 2vw, 16px);
+            width: min(690px, 100%);
+        }
+
+        .flip-unit {
+            min-width: 0;
+        }
+
+        .flip-card {
+            position: relative;
+            isolation: isolate;
+            min-height: clamp(88px, 11vw, 128px);
+            border-radius: 20px;
+            overflow: hidden;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(180deg, var(--flip-light), var(--flip-dark));
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.18),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.40),
+                0 16px 30px rgba(23, 32, 51, 0.18);
+        }
+
+        .flip-card::before,
+        .flip-card::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .flip-card::before {
+            top: 0;
+            height: 50%;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02));
+            border-bottom: 1px solid rgba(0, 0, 0, 0.34);
+        }
+
+        .flip-card::after {
+            top: 50%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.10);
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.40);
+        }
+
+        .flip-value {
+            position: relative;
+            z-index: 2;
+            color: #ffffff;
+            font-size: clamp(2rem, 5vw, 4.2rem);
+            line-height: 1;
+            font-weight: 900;
+            letter-spacing: -0.055em;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 0 3px 0 rgba(0, 0, 0, 0.18);
+            transform: translateY(-1px);
+        }
+
+        .flip-card.is-changing .flip-value {
+            animation: flipPulse 420ms ease;
+        }
+
+        @keyframes flipPulse {
+            0% { transform: translateY(-1px) rotateX(0deg); opacity: 1; }
+            45% { transform: translateY(2px) rotateX(-28deg); opacity: 0.62; }
+            100% { transform: translateY(-1px) rotateX(0deg); opacity: 1; }
+        }
+
+        .flip-label {
+            margin-top: 10px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.78rem;
+            font-weight: 900;
+            letter-spacing: 0.13em;
+            text-transform: uppercase;
+        }
+
+        .visual-panel {
+            justify-self: end;
+            width: min(390px, 100%);
+        }
+
+        .image-link {
+            display: block;
+            text-decoration: none;
+            border-radius: var(--radius-lg);
+            outline-offset: 5px;
+        }
+
+        .image-frame {
+            position: relative;
+            display: grid;
+            place-items: center;
+            min-height: 360px;
+            padding: 34px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--line);
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(248, 250, 252, 0.88)),
+                repeating-linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0 10px, transparent 10px 20px);
+            box-shadow: var(--shadow-soft);
+            overflow: hidden;
+            transition: transform 180ms ease, box-shadow 180ms ease;
+        }
+
+        .image-link:hover .image-frame,
+        .image-link:focus-visible .image-frame {
+            transform: translateY(-4px) rotate(-0.5deg);
+            box-shadow: 0 22px 45px rgba(32, 46, 73, 0.15);
+        }
+
+        .image-frame::before {
+            content: "";
+            position: absolute;
+            inset: 18px;
+            border-radius: 20px;
+            border: 1px dashed rgba(59, 130, 246, 0.30);
+            pointer-events: none;
+        }
+
+        .image-frame img {
+            position: relative;
+            z-index: 1;
+            width: min(240px, 78%);
+            max-height: 240px;
+            object-fit: contain;
+            filter: drop-shadow(0 18px 22px rgba(24, 32, 51, 0.16));
+        }
+
+        .image-link-caption {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 14px;
+            color: #2563eb;
+            font-size: 0.95rem;
+            font-weight: 850;
+        }
+
+        .finished-message {
+            width: min(690px, 100%);
+            padding: 22px;
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(59, 130, 246, 0.18);
+            background: rgba(232, 241, 255, 0.78);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .finished-message strong {
+            display: block;
+            font-size: 1.25rem;
+            margin-bottom: 6px;
+        }
+
+        .finished-message span {
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .flying-image {
+            position: fixed;
+            left: -180px;
+            top: 50vh;
+            width: var(--fly-size, 110px);
+            max-width: 34vw;
+            height: auto;
+            object-fit: contain;
+            z-index: 1;
+            pointer-events: none;
+            filter: drop-shadow(0 18px 18px rgba(24, 32, 51, 0.15));
+            animation: flyAcross var(--fly-duration, 8s) linear forwards;
+        }
+
+        @keyframes flyAcross {
+            0% {
+                transform: translateX(-12vw) translateY(0) rotate(var(--start-rotation, -8deg)) scale(var(--fly-scale, 1));
+                opacity: 0;
+            }
+            8% {
+                opacity: 0.92;
+            }
+            45% {
+                transform: translateX(52vw) translateY(var(--mid-y, -40px)) rotate(var(--mid-rotation, 14deg)) scale(var(--fly-scale, 1));
+                opacity: 0.96;
+            }
+            92% {
+                opacity: 0.9;
+            }
+            100% {
+                transform: translateX(122vw) translateY(var(--end-y, 20px)) rotate(var(--end-rotation, -18deg)) scale(var(--fly-scale, 1));
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .hero {
+                grid-template-columns: 1fr;
+            }
+
+            .visual-panel {
+                justify-self: stretch;
+                width: 100%;
+            }
+
+            .image-frame {
+                min-height: 280px;
+            }
+        }
+
+        @media (max-width: 620px) {
+            .page-shell {
+                width: min(100% - 20px, 1120px);
+                padding: 10px 0;
+                align-items: start;
+            }
+
+            .hero {
+                padding: 22px;
+                gap: 24px;
+            }
+
+            .countdown {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .flip-card {
+                min-height: 88px;
+                border-radius: 16px;
+            }
+
+            .image-frame {
+                min-height: 220px;
+                padding: 28px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                scroll-behavior: auto !important;
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+
+            .flying-image {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="page-shell">
+        <section class="counter-card" aria-labelledby="mainTitle">
+            <div class="hero">
+                <div class="content">
+                    <div class="eyebrow">
+                        <span class="eyebrow-dot" aria-hidden="true"></span>
+                        <span id="eyebrowText"></span>
+                    </div>
+
+                    <h1 id="mainTitle"></h1>
+                    <p class="subtitle" id="subtitle"></p>
+
+                    <div class="countdown" id="countdown" aria-live="polite">
+                        <div class="flip-unit">
+                            <div class="flip-card" data-unit="days">
+                                <span class="flip-value" id="days">00</span>
+                            </div>
+                            <div class="flip-label">Dagen</div>
+                        </div>
+
+                        <div class="flip-unit">
+                            <div class="flip-card" data-unit="hours">
+                                <span class="flip-value" id="hours">00</span>
+                            </div>
+                            <div class="flip-label">Uren</div>
+                        </div>
+
+                        <div class="flip-unit">
+                            <div class="flip-card" data-unit="minutes">
+                                <span class="flip-value" id="minutes">00</span>
+                            </div>
+                            <div class="flip-label">Minuten</div>
+                        </div>
+
+                        <div class="flip-unit">
+                            <div class="flip-card" data-unit="seconds">
+                                <span class="flip-value" id="seconds">00</span>
+                            </div>
+                            <div class="flip-label">Seconden</div>
+                        </div>
+                    </div>
+                </div>
+
+                <aside class="visual-panel" aria-label="Afbeelding">
+                    <a class="image-link" id="imageLink" href="#" target="_blank" rel="noopener noreferrer">
+                        <div class="image-frame">
+                            <img id="mainImage" src="" alt="">
+                        </div>
+                        <span class="image-link-caption" id="imageLinkLabel"></span>
+                    </a>
+                </aside>
+            </div>
+        </section>
+    </main>
+
+    <div id="flyingContainer" aria-hidden="true"></div>
+
+    <script>
+        const elements = {
+            pageTitle: document.querySelector("title"),
+            eyebrowText: document.getElementById("eyebrowText"),
+            mainTitle: document.getElementById("mainTitle"),
+            subtitle: document.getElementById("subtitle"),
+            countdown: document.getElementById("countdown"),
+            days: document.getElementById("days"),
+            hours: document.getElementById("hours"),
+            minutes: document.getElementById("minutes"),
+            seconds: document.getElementById("seconds"),
+            imageLink: document.getElementById("imageLink"),
+            imageLinkLabel: document.getElementById("imageLinkLabel"),
+            mainImage: document.getElementById("mainImage"),
+            flyingContainer: document.getElementById("flyingContainer")
+        };
+
+        const previousValues = {
+            days: null,
+            hours: null,
+            minutes: null,
+            seconds: null
+        };
+
+        const targetTime = new Date(CONFIG.targetDate).getTime();
+        let countdownTimer = null;
+
+        function applyConfig() {
+            elements.pageTitle.textContent = CONFIG.pageTitle || CONFIG.mainTitle || "Countdown";
+            elements.eyebrowText.textContent = CONFIG.eyebrowText || "Countdown";
+            elements.mainTitle.textContent = CONFIG.mainTitle || "Countdown";
+            elements.subtitle.textContent = CONFIG.subtitle || "";
+
+            elements.mainImage.src = CONFIG.imageUrl || "";
+            elements.mainImage.alt = CONFIG.imageAlt || "Countdown afbeelding";
+
+            elements.imageLink.href = CONFIG.imageLink || CONFIG.imageUrl || "#";
+            elements.imageLinkLabel.textContent = CONFIG.imageLinkLabel || "Open link";
+        }
+
+        function padNumber(value, length) {
+            return String(Math.max(0, value)).padStart(length, "0");
+        }
+
+        function setFlipValue(unit, value) {
+            const element = elements[unit];
+            const card = document.querySelector(`[data-unit="${unit}"]`);
+
+            if (previousValues[unit] !== null && previousValues[unit] !== value) {
+                card.classList.remove("is-changing");
+                void card.offsetWidth;
+                card.classList.add("is-changing");
+            }
+
+            previousValues[unit] = value;
+            element.textContent = value;
+        }
+
+        function showFinishedMessage() {
+            elements.countdown.innerHTML = `
+                <div class="finished-message">
+                    <strong>${CONFIG.endTitle || "Klaar!"}</strong>
+                    <span>${CONFIG.endMessage || "De counter is klaar."}</span>
+                </div>
+            `;
+        }
+
+        function updateCountdown() {
+            const now = Date.now();
+            const distance = targetTime - now;
+
+            if (!Number.isFinite(targetTime)) {
+                clearInterval(countdownTimer);
+                elements.countdown.innerHTML = `
+                    <div class="finished-message">
+                        <strong>Datum klopt niet</strong>
+                        <span>Controleer de waarde van CONFIG.targetDate bovenin dit bestand.</span>
+                    </div>
+                `;
+                return;
+            }
+
+            if (distance <= 0) {
+                clearInterval(countdownTimer);
+                showFinishedMessage();
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance / (1000 * 60 * 60)) % 24);
+            const minutes = Math.floor((distance / (1000 * 60)) % 60);
+            const seconds = Math.floor((distance / 1000) % 60);
+
+            setFlipValue("days", padNumber(days, 2));
+            setFlipValue("hours", padNumber(hours, 2));
+            setFlipValue("minutes", padNumber(minutes, 2));
+            setFlipValue("seconds", padNumber(seconds, 2));
+        }
+
+        function randomBetween(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        function launchFlyingImage() {
+            if (!CONFIG.flyingImageEnabled || !CONFIG.imageUrl) {
+                return;
+            }
+
+            const currentFlyingImages = elements.flyingContainer.querySelectorAll(".flying-image").length;
+            if (currentFlyingImages >= CONFIG.flyingImageMaxOnScreen) {
+                return;
+            }
+
+            const img = document.createElement("img");
+            const duration = Math.max(3, Number(CONFIG.flyingImageDurationSeconds) || 8);
+
+            img.src = CONFIG.imageUrl;
+            img.alt = "";
+            img.className = "flying-image";
+            img.style.top = `${randomBetween(12, 78)}vh`;
+            img.style.setProperty("--fly-duration", `${duration}s`);
+            img.style.setProperty("--fly-size", `${Math.round(randomBetween(72, 150))}px`);
+            img.style.setProperty("--fly-scale", randomBetween(0.85, 1.18).toFixed(2));
+            img.style.setProperty("--mid-y", `${Math.round(randomBetween(-90, 80))}px`);
+            img.style.setProperty("--end-y", `${Math.round(randomBetween(-70, 95))}px`);
+            img.style.setProperty("--start-rotation", `${Math.round(randomBetween(-18, 18))}deg`);
+            img.style.setProperty("--mid-rotation", `${Math.round(randomBetween(-26, 26))}deg`);
+            img.style.setProperty("--end-rotation", `${Math.round(randomBetween(-34, 34))}deg`);
+
+            elements.flyingContainer.appendChild(img);
+
+            window.setTimeout(() => {
+                img.remove();
+            }, duration * 1000 + 300);
+        }
+
+        function startFlyingImages() {
+            if (!CONFIG.flyingImageEnabled) {
+                return;
+            }
+
+            const interval = Math.max(2, Number(CONFIG.flyingImageEverySeconds) || 12) * 1000;
+            const chance = Math.min(1, Math.max(0, Number(CONFIG.flyingImageChance) || 0));
+
+            window.setInterval(() => {
+                if (Math.random() <= chance) {
+                    launchFlyingImage();
+                }
+            }, interval);
+        }
+
+        applyConfig();
+        updateCountdown();
+        countdownTimer = window.setInterval(updateCountdown, 1000);
+        startFlyingImages();
+    </script>
+</body>
+</html>
