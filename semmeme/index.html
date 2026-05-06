@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NIET DRUKKEN</title>
+  <style>
+    :root {
+      --bg: #0b0b10;
+      --text: #ffffff;
+      --glow: rgba(255, 0, 0, 0.55);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at center, #20202c 0%, var(--bg) 70%);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      overflow: hidden;
+    }
+
+    .wrap {
+      text-align: center;
+      padding: 24px;
+    }
+
+    .sound-button {
+      width: min(55vw, 320px);
+      height: min(55vw, 320px);
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      padding: 0;
+      cursor: pointer;
+      position: relative;
+      filter: drop-shadow(0 0 24px var(--glow));
+      animation: idlePulse 2.2s ease-in-out infinite;
+      transition: transform 120ms ease, filter 120ms ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .sound-button::before {
+      content: "";
+      position: absolute;
+      inset: 7%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.25), transparent 58%);
+      opacity: 0;
+      transform: scale(0.9);
+      pointer-events: none;
+    }
+
+    .sound-button img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .sound-button:hover {
+      transform: scale(1.045);
+      filter: drop-shadow(0 0 36px rgba(255, 0, 0, 0.75));
+    }
+
+    .sound-button:active,
+    .sound-button.is-playing {
+      transform: scale(0.92);
+      animation: clickBounce 420ms cubic-bezier(.2,.9,.2,1);
+    }
+
+    .sound-button.is-playing::before {
+      animation: flash 420ms ease-out;
+    }
+
+    .hint {
+      margin-top: 22px;
+      opacity: 0.8;
+      font-size: 16px;
+    }
+
+    @keyframes idlePulse {
+      0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 22px rgba(255, 0, 0, 0.42));
+      }
+      50% {
+        transform: scale(1.035);
+        filter: drop-shadow(0 0 38px rgba(255, 0, 0, 0.8));
+      }
+    }
+
+    @keyframes clickBounce {
+      0% { transform: scale(1); }
+      35% { transform: scale(0.88); }
+      70% { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes flash {
+      0% {
+        opacity: 0.9;
+        transform: scale(0.6);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(1.45);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <button class="sound-button" id="soundButton" type="button" aria-label="Speel geluid af">
+      <img src="image.png" alt="Rode knop" />
+    </button>
+    <div class="hint"></div>
+  </main>
+
+  <audio id="buttonSound" preload="auto">
+    <source src="https://semvang.nl/score.ogg" type="audio/ogg" />
+  </audio>
+
+  <script>
+    const button = document.getElementById('soundButton');
+    const audio = document.getElementById('buttonSound');
+
+    button.addEventListener('click', async () => {
+      button.classList.remove('is-playing');
+      void button.offsetWidth;
+      button.classList.add('is-playing');
+
+      try {
+        audio.currentTime = 0;
+        await audio.play();
+      } catch (error) {
+        console.warn('Geluid kon niet worden afgespeeld:', error);
+      }
+
+      window.setTimeout(() => {
+        button.classList.remove('is-playing');
+      }, 450);
+    });
+  </script>
+</body>
+</html>
